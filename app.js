@@ -91,7 +91,6 @@ const authenticateJWT = (req, res, next) => {
             if (err) {
                 return res.sendStatus(403);
             }
-
             req.user = user;
             next();
         });
@@ -117,7 +116,7 @@ app.post('/login', (req, res) => {
 
     if (user) {
         // Generate an access token
-        const accessToken = jwt.sign({ username: user.username, role: user.role }, accessTokenSecret);
+        const accessToken = jwt.sign({ username: user.username, role: user.role }, accessTokenSecret, { expiresIn: "20s" });
 
         res.json({
             accessToken
