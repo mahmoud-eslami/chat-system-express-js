@@ -1,9 +1,7 @@
-const { Sequelize } = require('sequelize');
+const
+    sequelize = require('./database');
 
-const sequelize = new Sequelize('test', 'root', '', {
-    host: 'localhost',
-    dialect: 'mysql'
-});
+sequelize.sync();
 
 checkDb();
 
