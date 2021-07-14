@@ -11,14 +11,6 @@ const Group = sequelize.define('Group', {
         type: Sequelize.STRING,
         allowNull: false,
     },
-    username: {
-        type: Sequelize.STRING,
-        allowNull: false,
-    },
-    password: {
-        type: Sequelize.STRING,
-        allowNull: false,
-    }
 }, {
     freezeTableName: true,
 });

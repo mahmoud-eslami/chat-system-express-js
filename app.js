@@ -1,10 +1,11 @@
-const
-    sequelize = require('./database');
-
+const sequelize = require('./database');
 const User = require('./models/User');
-const Group = require('./models/Groupe');
+const Group = require('./models/Group');
+const Channel = require('./models/Channel');
 
+// check data base every time to implement new changes
 syncDatabase();
+// check database for authentication
 checkDb();
 
 async function syncDatabase() {
