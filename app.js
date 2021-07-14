@@ -2,13 +2,14 @@ const
     sequelize = require('./database');
 
 const User = require('./models/User');
+const Group = require('./models/Groupe');
 
 syncDatabase();
 checkDb();
 
 async function syncDatabase() {
     try {
-        sequelize.sync();
+        sequelize.sync({ alter: true });
     } catch (err) {
         console.log(err);
     }
