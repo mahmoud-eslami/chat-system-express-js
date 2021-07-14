@@ -1,9 +1,18 @@
 const
     sequelize = require('./database');
 
-sequelize.sync();
+const User = require('./models/User');
 
+syncDatabase();
 checkDb();
+
+async function syncDatabase() {
+    try {
+        sequelize.sync();
+    } catch (err) {
+        console.log(err);
+    }
+}
 
 async function checkDb() {
     try {
