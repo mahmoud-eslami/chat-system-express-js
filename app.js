@@ -2,6 +2,7 @@ const sequelize = require('./database');
 const User = require('./models/User');
 const Group = require('./models/Group');
 const Channel = require('./models/Channel');
+const Entity = require('./models/Entity');
 
 // check data base every time to implement new changes
 syncDatabase();
