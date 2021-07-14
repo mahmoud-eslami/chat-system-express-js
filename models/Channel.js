@@ -15,4 +15,5 @@ const Channel = sequelize.define('Channel', {
     freezeTableName: true,
 });
 
+
 module.exports = Channel;

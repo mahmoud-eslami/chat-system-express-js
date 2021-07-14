@@ -15,4 +15,5 @@ const Group = sequelize.define('Group', {
     freezeTableName: true,
 });
 
+
 module.exports = Group;
