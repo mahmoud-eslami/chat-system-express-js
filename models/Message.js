@@ -3,7 +3,6 @@ const sequelize = require('../database');
 const entity = require('./Entity');
 
 const Message = sequelize.define('Message', {
-    //todo : user snow flake here
     messageId: {
         type: Sequelize.STRING,
         allowNull: false,
