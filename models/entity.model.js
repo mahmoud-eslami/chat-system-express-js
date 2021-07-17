@@ -1,8 +1,8 @@
 const Sequelize = require('sequelize');
-const sequelize = require('../database');
-const group = require('../models/Group');
+const sequelize = require('../config/database.config');
+const group = require('./group.model');
 const channel = require('../models/Channel');
-const user = require('../models/User');
+const user = require('./user.model');
 
 
 const Entity = sequelize.define('Entity', {

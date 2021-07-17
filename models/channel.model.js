@@ -1,8 +1,8 @@
 const Sequelize = require('sequelize');
-const sequelize = require('../database');
+const sequelize = require('../config/database.config');
 
-const Group = sequelize.define('Group', {
-    groupId: {
+const Channel = sequelize.define('Channel', {
+    channelId: {
         type: Sequelize.STRING,
         allowNull: false,
         primaryKey: true,
@@ -16,4 +16,4 @@ const Group = sequelize.define('Group', {
 });
 
 
-module.exports = Group;
+module.exports = Channel;

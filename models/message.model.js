@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize');
-const sequelize = require('../database');
-const entity = require('./Entity');
+const sequelize = require('../config/database.config');
+const entity = require('./entity.model');
 
 const Message = sequelize.define('Message', {
     messageId: {

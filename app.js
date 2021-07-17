@@ -1,9 +1,9 @@
-const sequelize = require('./database');
-const User = require('./models/User');
-const Group = require('./models/Group');
-const Channel = require('./models/Channel');
-const Entity = require('./models/Entity');
-const Message = require('./models/Message');
+const sequelize = require('./config/database.config');
+const User = require('./models/user.model');
+const Group = require('./models/group.model');
+const Channel = require('./models/channel.model');
+const Entity = require('./models/entity.model');
+const Message = require('./models/message.model');
 
 // check data base every time to implement new changes
 syncDatabase();
