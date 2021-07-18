@@ -4,6 +4,7 @@ const Group = require('./models/group.model');
 const Channel = require('./models/channel.model');
 const Entity = require('./models/entity.model');
 const Message = require('./models/message.model');
+const Membership = require('./models/membership.model');
 
 // check data base every time to implement new changes
 syncDatabase();

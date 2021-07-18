@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../config/database.config');
 const group = require('./group.model');
-const channel = require('../models/Channel');
+const channel = require('../models/channel.model');
 const user = require('./user.model');
 
 
