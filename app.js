@@ -6,10 +6,8 @@ const Entity = require('./models/entity.model');
 const Message = require('./models/message.model');
 const Membership = require('./models/membership.model');
 
-// check data base every time to implement new changes
-syncDatabase();
-// check database for authentication
 checkDb();
+syncDatabase();
 
 async function syncDatabase() {
     try {
