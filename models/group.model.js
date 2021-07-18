@@ -13,6 +13,7 @@ const Group = sequelize.define('Group', {
     },
 }, {
     freezeTableName: true,
+    updatedAt: false,
 });
 
 

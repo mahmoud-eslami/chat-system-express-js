@@ -13,6 +13,7 @@ const Channel = sequelize.define('Channel', {
     },
 }, {
     freezeTableName: true,
+    updatedAt: false,
 });
 
 

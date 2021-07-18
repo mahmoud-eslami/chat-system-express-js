@@ -13,6 +13,7 @@ const Entity = sequelize.define('Entity', {
     },
 }, {
     timestamps: false,
+    updatedAt: false,
 });
 
 Entity.belongsTo(channel, { foreignKey: { name: 'cid', allowNull: true } });

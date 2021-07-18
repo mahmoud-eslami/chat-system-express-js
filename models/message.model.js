@@ -19,6 +19,7 @@ const Message = sequelize.define('Message', {
     },
 }, {
     freezeTableName: true,
+    updatedAt: false,
 });
 
 Message.belongsTo(entity, { foreignKey: { name: 'eid', allowNull: false } });

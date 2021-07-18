@@ -21,6 +21,7 @@ const User = sequelize.define('User', {
     }
 }, {
     freezeTableName: true,
+    updatedAt: false,
 });
 
 
