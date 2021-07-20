@@ -1,6 +1,6 @@
 const jwt = require('json-web-token')
 
-const verifyToken = function(req, res, next) {
+exports.verifyToken = function(req, res, next) {
     let accessToken = req.cookies.jwt
 
     //if there is no token stored in cookies, the request is unauthorized
@@ -19,5 +19,3 @@ const verifyToken = function(req, res, next) {
         return res.status(401).send()
     }
 }
-
-module.exports = verifyToken;

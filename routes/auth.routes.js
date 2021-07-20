@@ -1,8 +1,7 @@
+const auth = require('../controller/auth.controller');
+
 module.exports = app => {
-    app.get('/', (req, res) => {
-        res.send({ asdasd: "asdasd" });
-    });
-    app.get('/1', (req, res) => {
-        res.send([{ number: 1 }]);
-    });
+    app.get('/login', auth.login);
+    app.get('/refreshToken', auth.refreshToken);
+    app.get('/register', auth.register);
 };
