@@ -13,16 +13,21 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 
-
+// adding Helmet to enhance your API's security
 app.use(helmet());
+// using bodyParser to parse JSON bodies into JS objects
 app.use(bodyParser.json());
+// enabling CORS for all requests
 app.use(cors());
+// adding morgan to log HTTP requests
 app.use(morgan('combined'));
 
 
 checkDb();
 syncDatabase();
 
+// include app with new routes
+require("./routes/auth.routes")(app);
 app.listen(5000, () => console.log('server start listening on 5000'));
 
 
@@ -42,3 +47,5 @@ async function checkDb() {
         console.error('Unable to connect to the database:', error);
     }
 }
+
+module.exports = app;
