@@ -3,7 +3,7 @@ const tokenChecker = require("../middleware/tokenChecker");
 
 module.exports = (app) => {
     app.get("/login", auth.login);
-    app.get("/refreshToken", tokenChecker, auth.refreshToken);
-    app.get("/register", auth.register);
-    app.get("/changePasswordInside", auth.changePasswordInside);
+    app.post("/refreshToken", tokenChecker, auth.refreshToken);
+    app.post("/register", auth.register);
+    app.post("/changePasswordInside", auth.changePasswordInside);
 };
