@@ -102,9 +102,12 @@ exports.changePasswordInside = async(req, res) => {
                 userId: userId,
             },
         });
-        // todo : unhash user password
-        const user_password = "";
-        if (user_password === newPassword) {
+        const valid_password = await bcrypt.compare(
+            req.body.password,
+            temp_user.password
+        );
+        if (valid_password) {
+            // todo : change password here
             res.status(200).json({ error: true, message: "password changed!" });
         } else {
             res.status(403).json({ error: true, message: "worng password!" });
