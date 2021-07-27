@@ -12,6 +12,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
+const config = require('./config/config.json')
 
 // adding Helmet to enhance your API's security
 app.use(helmet());
@@ -28,7 +29,7 @@ syncDatabase();
 
 // include app with new routes
 require("./routes/auth.routes")(app);
-app.listen(5000, () => console.log('server start listening on 5000'));
+app.listen(config.port, () => console.log('server start listening on 5000'));
 
 
 async function syncDatabase() {

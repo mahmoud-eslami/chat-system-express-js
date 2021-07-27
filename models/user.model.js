@@ -1,10 +1,11 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../config/database.config');
+const bcrypt = require('bcrypt');
 
 const User = sequelize.define('User', {
     userId: {
-        type: Sequelize.STRING,
-        allowNull: false,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
     },
     name: {
@@ -22,7 +23,7 @@ const User = sequelize.define('User', {
 }, {
     freezeTableName: true,
     updatedAt: false,
-});
 
+});
 
 module.exports = User;
