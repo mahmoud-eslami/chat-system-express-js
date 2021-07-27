@@ -103,7 +103,7 @@ exports.changePasswordInside = async(req, res) => {
             },
         });
         const valid_password = await bcrypt.compare(
-            req.body.password,
+            oldPassword,
             temp_user.password
         );
         if (valid_password) {
