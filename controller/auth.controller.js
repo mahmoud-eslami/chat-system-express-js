@@ -1,6 +1,6 @@
-const user = require('../models/user.model');
-const jwt = require('jsonwebtoken');
-const config = require('../config/config.json');
+const user = require("../models/user.model");
+const jwt = require("jsonwebtoken");
+const config = require("../config/config.json");
 
 exports.login = async(req, res) => {
     try {
@@ -9,7 +9,7 @@ exports.login = async(req, res) => {
             where: {
                 username: req.body.username,
                 password: req.body.password,
-            }
+            },
         });
 
         if (temp_user === null) {
@@ -19,29 +19,31 @@ exports.login = async(req, res) => {
             });
         } else {
             const token = jwt.sign({
-                userId: temp_user.userId,
-                username: temp_user.username
-            }, config.secret, {
-                expiresIn: config.tokenLife,
-            });
+                    userId: temp_user.userId,
+                    username: temp_user.username,
+                },
+                config.secret, {
+                    expiresIn: config.tokenLife,
+                }
+            );
             res.status(200).json({
                 error: false,
                 message: {
                     token: token,
-                }
+                },
             });
         }
     } catch (e) {
         console.log(e);
         res.status(500).json({
             error: true,
-            message: e
+            message: e,
         });
     }
 };
 
 exports.refreshToken = (req, res) => {
-    res.send('refresh');
+    res.send("refresh");
 };
 
 exports.register = async(req, res) => {
@@ -50,13 +52,13 @@ exports.register = async(req, res) => {
         const temp_user = await user.findOne({
             where: {
                 username: req.body.username,
-            }
+            },
         });
         console.log(temp_user);
         if (temp_user !== null) {
             res.status(409).json({
                 error: true,
-                message: "user already exist!"
+                message: "user already exist!",
             });
         } else {
             await user.create({
@@ -67,18 +69,16 @@ exports.register = async(req, res) => {
 
             res.status(200).json({
                 error: false,
-                message: "user created!"
+                message: "user created!",
             });
         }
-
     } catch (e) {
         console.log(e);
         res.status(500).json({
             error: true,
-            message: e
+            message: e,
         });
     }
-
 };
 
 exports.changePasswordInside = async(req, res) => {
@@ -87,7 +87,7 @@ exports.changePasswordInside = async(req, res) => {
         const temp_user = await user.findOne({
             where: {
                 userId: userId,
-            }
+            },
         });
         // todo : unhash user password
         const user_password = "";
@@ -100,4 +100,4 @@ exports.changePasswordInside = async(req, res) => {
         console.log(e);
         res.status(500).json({ error: true, message: e });
     }
-}
+};
