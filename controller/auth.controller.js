@@ -4,6 +4,9 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/config.json");
 const bcrypt = require("bcrypt");
 
+// todo : should use redis to store refresh token
+const refreshTokenList = [];
+
 exports.login = async(req, res) => {
     try {
         const temp_user = await user.findOne({
@@ -37,10 +40,23 @@ exports.login = async(req, res) => {
                         expiresIn: config.tokenLife,
                     }
                 );
+                const refreshToken = jwt.sign({
+                        userId: temp_user.userId,
+                        username: temp_user.username,
+                    },
+                    config.secret, {
+                        expiresIn: config.refreshTokenLife,
+                    }
+                );
+                // add refresh token to list
+                // todo : should use redis to store refresh token
+                refreshTokenList.push(refreshToken);
+
                 res.status(200).json({
                     error: false,
                     message: {
                         token: token,
+                        refreshToken: refreshToken,
                     },
                 });
             }
@@ -55,7 +71,28 @@ exports.login = async(req, res) => {
 };
 
 exports.refreshToken = (req, res) => {
-    res.send("refresh");
+    try {
+        console.log(refreshTokenList);
+        const { token, refreshToken } = req.body;
+
+        if (refreshTokenList.includes(refreshToken)) {
+            res.status(200).json({
+                error: false,
+                message: "Ok",
+            });
+        } else {
+            res.status(404).json({
+                error: true,
+                message: "token is invalid !",
+            });
+        }
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: true,
+            message: e,
+        });
+    }
 };
 
 exports.register = async(req, res) => {
@@ -75,14 +112,15 @@ exports.register = async(req, res) => {
                 message: "user already exist!",
             });
         } else {
-            await user.create({
+            const created_user = await user.create({
                 name: req.body.name,
                 username: req.body.username,
                 password: hashed_password,
             });
 
+            // create entity after create user
             await entity.create({
-
+                uid: created_user.userId,
             });
 
             res.status(200).json({
