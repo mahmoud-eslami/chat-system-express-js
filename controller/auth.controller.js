@@ -107,7 +107,11 @@ exports.changePasswordInside = async(req, res) => {
             temp_user.password
         );
         if (valid_password) {
-            // todo : change password here
+            const salt = await bcrypt.genSalt(config.saltRound);
+            let hashed_password = await bcrypt.hash(newPassword, salt);
+
+            await temp_user.update({ password: hashed_password });
+
             res.status(200).json({ error: true, message: "password changed!" });
         } else {
             res.status(403).json({ error: true, message: "worng password!" });
