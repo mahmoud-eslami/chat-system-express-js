@@ -5,4 +5,5 @@ module.exports = app => {
     app.get('/login', auth.login);
     app.get('/refreshToken', tokenChecker, auth.refreshToken);
     app.get('/register', auth.register);
+    app.get('/changePasswordInside', auth.changePasswordInside);
 };

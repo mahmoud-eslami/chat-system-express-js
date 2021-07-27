@@ -39,9 +39,11 @@ exports.login = async(req, res) => {
         });
     }
 };
+
 exports.refreshToken = (req, res) => {
     res.send('refresh');
 };
+
 exports.register = async(req, res) => {
     try {
         // todo : hash password
@@ -78,3 +80,24 @@ exports.register = async(req, res) => {
     }
 
 };
+
+exports.changePasswordInside = async(req, res) => {
+    try {
+        const { oldPassword, newPassword, userId } = req.body;
+        const temp_user = await user.findOne({
+            where: {
+                userId: userId,
+            }
+        });
+        // todo : unhash user password
+        const user_password = "";
+        if (user_password === newPassword) {
+            res.status(200).json({ error: true, message: "password changed!" });
+        } else {
+            res.status(403).json({ error: true, message: "worng password!" });
+        }
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({ error: true, message: e });
+    }
+}
