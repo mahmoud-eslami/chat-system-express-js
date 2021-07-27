@@ -1,6 +1,7 @@
 const user = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const config = require("../config/config.json");
+const bcrypt = require("bcrypt");
 
 exports.login = async(req, res) => {
     try {
@@ -48,7 +49,9 @@ exports.refreshToken = (req, res) => {
 
 exports.register = async(req, res) => {
     try {
-        // todo : hash password
+        const salt = await bcrypt.genSalt(config.saltRound);
+        let hashed_password = await bcrypt.hash(req.body.password, salt);
+
         const temp_user = await user.findOne({
             where: {
                 username: req.body.username,
@@ -64,7 +67,7 @@ exports.register = async(req, res) => {
             await user.create({
                 name: req.body.name,
                 username: req.body.username,
-                password: req.body.password,
+                password: hashed_password,
             });
 
             res.status(200).json({
