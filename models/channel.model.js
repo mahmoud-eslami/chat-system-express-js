@@ -3,8 +3,8 @@ const sequelize = require('../config/database.config');
 
 const Channel = sequelize.define('Channel', {
     channelId: {
-        type: Sequelize.STRING,
-        allowNull: false,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
     },
     name: {

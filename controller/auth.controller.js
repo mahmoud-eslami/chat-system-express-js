@@ -1,4 +1,5 @@
 const user = require("../models/user.model");
+const entity = require("../models/entity.model");
 const jwt = require("jsonwebtoken");
 const config = require("../config/config.json");
 const bcrypt = require("bcrypt");
@@ -78,6 +79,10 @@ exports.register = async(req, res) => {
                 name: req.body.name,
                 username: req.body.username,
                 password: hashed_password,
+            });
+
+            await entity.create({
+
             });
 
             res.status(200).json({
