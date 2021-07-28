@@ -3,7 +3,7 @@ const entity = require("../models/entity.model");
 
 exports.createChannel = async(req, res) => {
     try {
-        const { name, messageId, description, id } = req.body;
+        const { name, description } = req.body;
 
         const new_channel = await channel.create({
             name: name,
