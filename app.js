@@ -13,6 +13,7 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const config = require("./config/config.json");
+const webSocket = require("./controller/websocket.controller");
 
 // adding Helmet to enhance your API's security
 app.use(helmet());

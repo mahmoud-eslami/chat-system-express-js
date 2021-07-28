@@ -23,7 +23,8 @@
     "mysql": "^2.18.1",
     "mysql2": "^2.2.5",
     "sequelize": "^6.6.4",
-    "sqlite3": "^5.0.2"
+    "sqlite3": "^5.0.2",
+    "ws": "^7.5.3"
   },
   "devDependencies": {
     "sequelize-cli": "^6.2.0"
