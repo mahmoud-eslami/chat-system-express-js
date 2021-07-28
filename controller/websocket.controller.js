@@ -10,13 +10,35 @@ const wss = new WebSocket.Server({ port: 8080 });
 CLIENT = [];
 wss.on("connection", (connection, request) => {
     // add every new connection to array
+    const parameters = parse(request.url, true);
+    connection.userId = parameters.query.userId;
     CLIENT.push(connection);
 
     connection.on("message", (message) => {
-        connection.send("gari");
+        var jsonMessage = JSON.parse(message);
+        switch (jsonMessage.key) {
+            case "addMessage":
+                {
+                    connection.send("add message called");
+                    break;
+                }
+            case "seenMessage":
+                {
+                    connection.send("seen message called");
+                    break;
+                }
+            case "deleteMessage":
+                {
+                    connection.send("delete message called");
+                    break;
+                }
+            case "editMessage":
+                {
+                    connection.send("edit message called");
+                    break;
+                }
+        }
     });
-
-    connection.send("yay you joined to web socket!");
 });
 
 function sendAll(message) {
