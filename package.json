@@ -24,6 +24,7 @@
     "mysql2": "^2.2.5",
     "sequelize": "^6.6.4",
     "sqlite3": "^5.0.2",
+    "url-parse": "^1.5.3",
     "ws": "^7.5.3"
   },
   "devDependencies": {
