@@ -97,13 +97,14 @@ exports.refreshToken = (req, res) => {
 
 exports.register = async(req, res) => {
     try {
-        const { username, password, name } =
+        const { username, password, name, email, isEmailAuth, phone_number } =
+        req.body;
         const salt = await bcrypt.genSalt(config.saltRound);
-        let hashed_password = await bcrypt.hash(req.body.password, salt);
+        let hashed_password = await bcrypt.hash(password, salt);
 
         const temp_user = await user.findOne({
             where: {
-                username: req.body.username,
+                username: username,
             },
         });
         console.log(temp_user);
@@ -113,12 +114,24 @@ exports.register = async(req, res) => {
                 message: "user already exist!",
             });
         } else {
-            const created_user = await user.create({
-                name: req.body.name,
-                username: req.body.username,
-                password: hashed_password,
-            });
-
+            let created_user;
+            if (isEmailAuth === true) {
+                // todo : send email for authentication
+                created_user = await user.create({
+                    name: name,
+                    username: username,
+                    password: hashed_password,
+                    email: email,
+                });
+            } else {
+                // todo : send sms for authentication
+                created_user = await user.create({
+                    name: name,
+                    username: username,
+                    password: hashed_password,
+                    phoneNumber: phone_number,
+                });
+            }
             // create entity after create user
             await entity.create({
                 uid: created_user.userId,
