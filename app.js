@@ -25,6 +25,12 @@ app.use(cors());
 app.use(morgan("combined"));
 
 checkDb();
+// entity associate
+Group.hasOne(Entity, { foreignKey: { name: "gid", allowNull: true } });
+Channel.hasOne(Entity, { foreignKey: { name: "cid", allowNull: true } });
+User.hasOne(Entity, { foreignKey: { name: "uid", allowNull: true } });
+// group associate
+Message.hasOne(Group, { foreignKey: { name: "mid", allowNull: true } });
 syncDatabase();
 
 // include app with new routes
@@ -35,7 +41,7 @@ app.listen(config.port, () => console.log("server start listening on 5000"));
 
 async function syncDatabase() {
     try {
-        sequelize.sync({ alter: true });
+        sequelize.sync({ force: true });
     } catch (err) {
         console.log(err);
     }

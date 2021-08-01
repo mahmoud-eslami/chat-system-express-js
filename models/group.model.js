@@ -12,6 +12,10 @@ const Group = sequelize.define(
             type: Sequelize.STRING,
             allowNull: false,
         },
+        description: {
+            type: Sequelize.STRING,
+            allowNull: false,
+        },
     }, {
         freezeTableName: true,
         updatedAt: false,
