@@ -56,6 +56,13 @@ app.get("/splitter", (req, res) => {
             "it",
             "for",
             "that",
+            "on",
+            "+",
+            "you",
+            "your",
+            "me",
+            "my",
+            "our",
         ];
         let text = body
             .replace(/\n/gi, "")
