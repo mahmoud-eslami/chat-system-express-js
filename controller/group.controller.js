@@ -7,6 +7,7 @@ exports.createGroup = async(req, res) => {
 
         const new_group = await group.create({
             name: name,
+            description: description,
         });
 
         await entity.create({

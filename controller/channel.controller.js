@@ -7,6 +7,7 @@ exports.createChannel = async(req, res) => {
 
         const new_channel = await channel.create({
             name: name,
+            description: description,
         });
 
         // create entity after create channel

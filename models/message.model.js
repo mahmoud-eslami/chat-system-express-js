@@ -1,6 +1,5 @@
 const Sequelize = require("sequelize");
 const sequelize = require("../config/database.config");
-const entity = require("./entity.model");
 
 const Message = sequelize.define(
     "Message", {
@@ -23,13 +22,5 @@ const Message = sequelize.define(
         updatedAt: false,
     }
 );
-
-Message.belongsTo(entity, { foreignKey: { name: "eid", allowNull: false } });
-Message.belongsTo(entity, {
-    foreignKey: { name: "eid_receiver", allowNull: false },
-});
-Message.belongsTo(Message, {
-    foreignKey: { name: "replay_mid", allowNull: true },
-});
 
 module.exports = Message;
