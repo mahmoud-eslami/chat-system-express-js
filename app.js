@@ -14,6 +14,8 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const config = require("./config/config.json");
 const webSocket = require("./controller/websocket.controller");
+var request = require("request");
+const jsdom = require("jsdom");
 
 // adding Helmet to enhance your API's security
 app.use(helmet());
@@ -26,50 +28,77 @@ app.use(morgan("combined"));
 
 checkDb();
 
-// entity associate
-Group.hasOne(Entity, { foreignKey: { name: "gid", allowNull: true } });
-Entity.belongsTo(Group, { foreignKey: { name: "gid", allowNull: true } });
-Channel.hasOne(Entity, { foreignKey: { name: "cid", allowNull: true } });
-Entity.belongsTo(Channel, { foreignKey: { name: "cid", allowNull: true } });
-User.hasOne(Entity, { foreignKey: { name: "uid", allowNull: true } });
-Entity.belongsTo(User, { foreignKey: { name: "uid", allowNull: true } });
-
-// memberShip associate
-Entity.hasOne(Membership, { foreignKey: { name: "eid1", allowNull: true } });
-Membership.belongsTo(Entity, { foreignKey: { name: "eid1", allowNull: true } });
-Entity.hasOne(Membership, { foreignKey: { name: "eid2", allowNull: true } });
-Membership.belongsTo(Entity, { foreignKey: { name: "eid2", allowNull: true } });
-
-// message associate
-Entity.hasOne(Message, {
-    foreignKey: { name: "eid_sender", allowNull: false },
-});
-Message.belongsTo(Entity, {
-    foreignKey: { name: "eid_sender", allowNull: false },
-});
-Entity.hasOne(Message, {
-    foreignKey: { name: "eid_receiver", allowNull: false },
-});
-Message.belongsTo(Entity, {
-    foreignKey: { name: "eid_receiver", allowNull: false },
-});
-
-Message.hasOne(Message, {
-    foreignKey: { name: "replay_mid", allowNull: true },
-});
-Message.belongsTo(Message, {
-    foreignKey: { name: "replay_mid", allowNull: true },
-});
-
-// group associate
-// Message.hasOne(Group, { foreignKey: { name: "mid", allowNull: true } });
-// Group.belongsTo(Message, { foreignKey: { name: "mid", allowNull: true } });
-
-// channel associate
-// Message.hasOne(Channel, { foreignKey: { name: "mid", allowNull: true } });
-// Channel.belongsTo(Message, { foreignKey: { name: "mid", allowNull: true } });
-
 syncDatabase();
+
+app.get("/splitter", (req, res) => {
+    const url = req.body.url;
+    request({ uri: url }, function(error, response, body) {
+        const forbiddenWord = [
+            "am",
+            "is",
+            "are",
+            "a",
+            "an",
+            "&",
+            "or",
+            "and",
+            "with",
+            "in",
+            "the",
+            "to",
+            "of",
+            ".",
+            "",
+            "be",
+            "in",
+            "I",
+            "i",
+            "it",
+            "for",
+            "that",
+        ];
+        let text = body
+            .replace(/\n/gi, "")
+            .replace(/<style[^>]*>[\s\S]*?<\/style[^>]*>/gi, "")
+            .replace(/<head[^>]*>[\s\S]*?<\/head[^>]*>/gi, "")
+            .replace(/<script[^>]*>[\s\S]*?<\/script[^>]*>/gi, "")
+            .replace(/<\/\s*(?:p|div)>/gi, "")
+            .replace(/<br[^>]*\/?>/gi, "")
+            .replace(/<[^>]*>/gi, "")
+            .replace("&nbsp;", " ")
+            .replace(/[^\S\r\n][^\S\r\n]+/gi, " ")
+            .replace(/[0-9]/g, "")
+            .replace(/\t/g, "")
+            .replace(/\r/g, "");
+
+        text = text.toLowerCase();
+
+        let split = text.split(" ");
+
+        forbiddenWord.forEach((element) => {
+            split = split.filter(function(item) {
+                return item !== element;
+            });
+        });
+
+        let obj = {};
+        for (var x = 0; x < split.length; x++) {
+            if (obj[split[x]] === undefined) {
+                obj[split[x]] = 1;
+            } else {
+                obj[split[x]]++;
+            }
+        }
+        var sortable = [];
+        for (var word in obj) {
+            sortable.push([word, obj[word]]);
+        }
+        sortable.sort(function(a, b) {
+            return b[1] - a[1];
+        });
+        res.status(200).json({ url: url, words: sortable, body: text });
+    });
+});
 
 // include app with new routes
 require("./routes/auth.routes")(app);
