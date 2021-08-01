@@ -97,6 +97,7 @@ exports.refreshToken = (req, res) => {
 
 exports.register = async(req, res) => {
     try {
+        const { username, password, name } =
         const salt = await bcrypt.genSalt(config.saltRound);
         let hashed_password = await bcrypt.hash(req.body.password, salt);
 
