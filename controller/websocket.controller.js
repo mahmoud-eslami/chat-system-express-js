@@ -19,7 +19,8 @@ wss.on("connection", (connection, request) => {
         switch (jsonMessage.key) {
             case "addMessage":
                 {
-                    connection.send("add message called");
+                    connection.send("waiting to add message...");
+
                     break;
                 }
             case "seenMessage":

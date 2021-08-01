@@ -13,17 +13,23 @@ const User = sequelize.define(
             type: Sequelize.STRING,
             allowNull: false,
         },
-        email: {
-            type: DataTypes.STRING,
+        phoneNumber: {
+            type: Sequelize.STRING,
             allowNull: true,
-            unique: true,
+            validate: {
+                len: { args: [11, 11], msg: "Phone Number is invalid" },
+                isInt: { args: true, msg: "You must enter Phone Number" },
+            },
+        },
+        email: {
+            type: Sequelize.STRING,
+            allowNull: true,
             validate: {
                 isEmail: {
                     msg: "Must be a valid email address",
                 },
             },
         },
-
         username: {
             type: Sequelize.STRING,
             allowNull: false,
@@ -35,6 +41,10 @@ const User = sequelize.define(
     }, {
         freezeTableName: true,
         updatedAt: false,
+        indexes: [{
+            unique: true,
+            fields: ["phoneNumber", "email"],
+        }, ],
     }
 );
 
