@@ -112,7 +112,7 @@ app.listen(config.port, () => console.log("server start listening on 5000"));
 
 async function syncDatabase() {
     try {
-        sequelize.sync({ force: true });
+        sequelize.sync({ alter: true });
     } catch (err) {
         console.log(err);
     }

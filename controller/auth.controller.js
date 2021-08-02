@@ -1,4 +1,4 @@
-const { entity, user } = require("../models/entity.model");
+const { Entity, User } = require("../models/entity.model");
 const jwt = require("jsonwebtoken");
 const config = require("../config/config.json");
 const bcrypt = require("bcrypt");
@@ -8,7 +8,7 @@ const refreshTokenList = [];
 
 exports.login = async(req, res) => {
     try {
-        const temp_user = await user.findOne({
+        const temp_user = await User.findOne({
             where: {
                 username: req.body.username,
             },
@@ -101,7 +101,7 @@ exports.register = async(req, res) => {
         const salt = await bcrypt.genSalt(config.saltRound);
         let hashed_password = await bcrypt.hash(password, salt);
 
-        const temp_user = await user.findOne({
+        const temp_user = await User.findOne({
             where: {
                 username: username,
             },
@@ -116,7 +116,7 @@ exports.register = async(req, res) => {
             let created_user;
             if (isEmailAuth === true) {
                 // todo : send email for authentication
-                created_user = await user.create({
+                created_user = await User.create({
                     name: name,
                     username: username,
                     password: hashed_password,
@@ -124,7 +124,7 @@ exports.register = async(req, res) => {
                 });
             } else {
                 // todo : send sms for authentication
-                created_user = await user.create({
+                created_user = await User.create({
                     name: name,
                     username: username,
                     password: hashed_password,
@@ -132,7 +132,7 @@ exports.register = async(req, res) => {
                 });
             }
             // create entity after create user
-            await entity.create({
+            await Entity.create({
                 uid: created_user.userId,
             });
 
@@ -153,7 +153,7 @@ exports.register = async(req, res) => {
 exports.changePasswordInside = async(req, res) => {
     try {
         const { oldPassword, newPassword, userId } = req.body;
-        const temp_user = await user.findOne({
+        const temp_user = await User.findOne({
             where: {
                 userId: userId,
             },
