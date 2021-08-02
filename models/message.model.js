@@ -1,5 +1,6 @@
 const Sequelize = require("sequelize");
 const sequelize = require("../config/database.config");
+const { Entity, Channel, User, Group } = require("./entity.model");
 
 const Message = sequelize.define(
     "Message", {
@@ -22,5 +23,25 @@ const Message = sequelize.define(
         updatedAt: false,
     }
 );
+
+Entity.hasMany(Message, {
+    foreignKey: { name: "eid_sender", allowNull: false },
+});
+Message.belongsTo(Entity, {
+    foreignKey: { name: "eid_sender", allowNull: false },
+});
+Entity.hasMany(Message, {
+    foreignKey: { name: "eid_receiver", allowNull: false },
+});
+Message.belongsTo(Entity, {
+    foreignKey: { name: "eid_receiver", allowNull: false },
+});
+
+Message.hasMany(Message, {
+    foreignKey: { name: "replay_mid", allowNull: true },
+});
+Message.belongsTo(Message, {
+    foreignKey: { name: "replay_mid", allowNull: true },
+});
 
 module.exports = Message;

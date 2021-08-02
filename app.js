@@ -1,9 +1,6 @@
 const sequelize = require("./config/database.config");
-const User = require("./models/user.model");
-const Group = require("./models/group.model");
-const Channel = require("./models/channel.model");
-const Entity = require("./models/entity.model");
 const Message = require("./models/message.model");
+const { Entity, Channel, User, Group } = require("./models/entity.model");
 const Membership = require("./models/membership.model");
 const express = require("express");
 const jwt = require("jsonwebtoken");

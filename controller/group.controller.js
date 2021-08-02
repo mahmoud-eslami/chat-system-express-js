@@ -1,5 +1,4 @@
-const group = require("../models/group.model");
-const entity = require("../models/entity.model");
+const { entity, group } = require("../models/entity.model");
 
 exports.createGroup = async(req, res) => {
     try {

@@ -1,5 +1,4 @@
-const channel = require("../models/channel.model");
-const entity = require("../models/entity.model");
+const { entity, channel } = require("../models/entity.model");
 
 exports.createChannel = async(req, res) => {
     try {
