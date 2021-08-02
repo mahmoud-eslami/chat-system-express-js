@@ -1,4 +1,5 @@
 const { Entity, Channel } = require("../models/entity.model");
+const Membership = require("../models/membership.model");
 
 exports.createChannel = async(req, res) => {
     try {
@@ -13,6 +14,8 @@ exports.createChannel = async(req, res) => {
         await Entity.create({
             cid: new_channel.channelId,
         });
+
+        // todo : create member ship for user as admin
 
         res
             .status(200)
@@ -41,6 +44,8 @@ exports.deleteChannel = async(req, res) => {
             },
         });
 
+        // todo : delete member ship for user as admin
+
         res
             .status(200)
             .json({ error: false, message: "channel deleted successfull!" });
@@ -53,8 +58,41 @@ exports.deleteChannel = async(req, res) => {
     }
 };
 
-// todo : add membership
-exports.joinChannel = async(req, res) => {};
+exports.joinChannel = async(req, res) => {
+    try {
+        const { userId, channelId } = req.body;
+        // get entity
+        let temp_user = await Entity.findOne({
+            where: {
+                uid: userId,
+            },
+        });
+
+        let temp_channel = await Entity.findOne({
+            where: {
+                cid: channelId,
+            },
+        });
+
+        // create member ship
+        await Membership.create({
+            Role: "U",
+            LastVisitDate: Date.now(),
+            eid1: temp_user.entityId,
+            eid2: temp_channel.entityId,
+        });
+
+        res
+            .status(200)
+            .json({ error: false, message: "user joined channel successfull!" });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: true,
+            message: e,
+        });
+    }
+};
 
 // todo : remove membership
 exports.leftChannel = async(req, res) => {};
