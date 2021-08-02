@@ -17,9 +17,23 @@ const Membership = sequelize.define(
     }
 );
 
-Entity.hasOne(Membership, { foreignKey: { name: "eid1", allowNull: true } });
-Membership.belongsTo(Entity, { foreignKey: { name: "eid1", allowNull: true } });
-Entity.hasOne(Membership, { foreignKey: { name: "eid2", allowNull: true } });
-Membership.belongsTo(Entity, { foreignKey: { name: "eid2", allowNull: true } });
+Entity.hasOne(Membership, {
+    foreignKey: {
+        name: "eid1",
+        allowNull: true,
+    },
+});
+Membership.belongsTo(Entity, {
+    foreignKey: {
+        name: "eid1",
+        allowNull: true,
+    },
+});
+Entity.hasOne(Membership, {
+    foreignKey: { name: "eid2", allowNull: true },
+});
+Membership.belongsTo(Entity, {
+    foreignKey: { name: "eid2", allowNull: true },
+});
 
 module.exports = Membership;

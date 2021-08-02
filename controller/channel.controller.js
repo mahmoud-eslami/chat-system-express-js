@@ -3,19 +3,32 @@ const Membership = require("../models/membership.model");
 
 exports.createChannel = async(req, res) => {
     try {
-        const { name, description } = req.body;
+        const { name, description, userId } = req.body;
 
         const new_channel = await Channel.create({
             name: name,
             description: description,
         });
 
+        // get user Entity
+        let user_entity = await Entity.findOne({
+            where: {
+                uid: userId,
+            },
+        });
+
         // create entity after create channel
-        await Entity.create({
+        let new_channel_entity = await Entity.create({
             cid: new_channel.channelId,
         });
 
-        // todo : create member ship for user as admin
+        // create membership for user as admin
+        await Membership.create({
+            Role: "A",
+            LastVisitDate: Date.now(),
+            eid1: user_entity.entityId,
+            eid2: new_channel_entity.entityId,
+        });
 
         res
             .status(200)
@@ -31,24 +44,45 @@ exports.createChannel = async(req, res) => {
 
 exports.deleteChannel = async(req, res) => {
     try {
-        const channelId = req.body.channelId;
-        await Entity.destroy({
+        const { channelId, userId } = req.body;
+
+        let user_entity = await Entity.findOne({
             where: {
-                cid: channelId,
+                uid: userId,
             },
         });
 
-        await Channel.destroy({
+        let channel_entity = await Entity.findOne({ where: { cid: channelId } });
+
+        let user_membership = await Membership.findOne({
+            where: {
+                eid1: user_entity.entityId,
+                Role: "A",
+            },
+        });
+
+        let temp_channel = await Channel.findOne({
             where: {
                 channelId: channelId,
             },
         });
 
-        // todo : delete member ship for user as admin
+        if (user_membership !== null && temp_channel !== null) {
+            await channel_entity.destroy();
 
-        res
-            .status(200)
-            .json({ error: false, message: "channel deleted successfull!" });
+            await temp_channel.destroy();
+
+            await user_membership.destroy();
+
+            res
+                .status(200)
+                .json({ error: false, message: "channel deleted successfull!" });
+        } else {
+            res.status(403).json({
+                error: false,
+                message: "permission denied or channel not exist!",
+            });
+        }
     } catch (e) {
         console.log(e);
         res.status(500).json({
@@ -61,13 +95,14 @@ exports.deleteChannel = async(req, res) => {
 exports.joinChannel = async(req, res) => {
     try {
         const { userId, channelId } = req.body;
-        // get entity
+        // get user entity
         let temp_user = await Entity.findOne({
             where: {
                 uid: userId,
             },
         });
 
+        // get channel entity
         let temp_channel = await Entity.findOne({
             where: {
                 cid: channelId,
@@ -94,5 +129,39 @@ exports.joinChannel = async(req, res) => {
     }
 };
 
-// todo : remove membership
-exports.leftChannel = async(req, res) => {};
+exports.leftChannel = async(req, res) => {
+    try {
+        const { userId, channelId } = req.body;
+
+        // get user entity
+        let temp_user = await Entity.findOne({
+            where: {
+                uid: userId,
+            },
+        });
+
+        // get channel entity
+        let temp_channel = await Entity.findOne({
+            where: {
+                cid: channelId,
+            },
+        });
+
+        await Membership.destroy({
+            where: {
+                eid1: temp_user.entityId,
+                eid2: temp_channel.entityId,
+            },
+        });
+
+        res
+            .status(200)
+            .json({ error: false, message: "user left channel successfull!" });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: true,
+            message: e,
+        });
+    }
+};

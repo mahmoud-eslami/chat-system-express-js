@@ -126,17 +126,33 @@ Entity.belongsTo(Channel, {
 });
 
 Group.hasMany(Entity, {
-    foreignKey: { name: "gid", allowNull: true, defaultValue: null },
+    foreignKey: {
+        name: "gid",
+        allowNull: true,
+        defaultValue: null,
+    },
 });
 Entity.belongsTo(Group, {
-    foreignKey: { name: "gid", allowNull: true, defaultValue: null },
+    foreignKey: {
+        name: "gid",
+        allowNull: true,
+        defaultValue: null,
+    },
 });
 
 User.hasMany(Entity, {
-    foreignKey: { name: "uid", allowNull: true, defaultValue: null },
+    foreignKey: {
+        name: "uid",
+        allowNull: true,
+        defaultValue: null,
+    },
 });
 Entity.belongsTo(User, {
-    foreignKey: { name: "uid", allowNull: true, defaultValue: null },
+    foreignKey: {
+        name: "uid",
+        allowNull: true,
+        defaultValue: null,
+    },
 });
 
 module.exports = { Entity, User, Channel, Group };
