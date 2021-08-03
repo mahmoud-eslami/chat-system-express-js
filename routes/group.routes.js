@@ -8,4 +8,5 @@ module.exports = (app) => {
     app.post("/left/group", tokenChecker, group.leftGroup);
     app.post("/update/group", tokenChecker, group.updateGroupInfo);
     app.post("/addAdmin/group", tokenChecker, group.addAdminForGroup);
+    app.get("/group/members", tokenChecker, group.getGroupMember);
 };

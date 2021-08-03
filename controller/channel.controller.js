@@ -239,7 +239,7 @@ exports.addAdminForChannel = async(req, res) => {
         if (current_user_membership) {
             await target_user_membership.update({ Role: "A" });
             res.status(200).json({
-                error: true,
+                error: false,
                 message: "user promoted to admin!",
             });
         } else {

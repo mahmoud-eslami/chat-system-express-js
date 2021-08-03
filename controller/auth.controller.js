@@ -168,7 +168,7 @@ exports.changePasswordInside = async(req, res) => {
 
             await temp_user.update({ password: hashed_password });
 
-            res.status(200).json({ error: true, message: "password changed!" });
+            res.status(200).json({ error: false, message: "password changed!" });
         } else {
             res.status(403).json({ error: true, message: "worng password!" });
         }
