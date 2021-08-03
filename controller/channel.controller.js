@@ -203,7 +203,52 @@ exports.updateChannelInfo = async(req, res) => {
 };
 
 exports.addAdminForChannel = async(req, res) => {
-    try {} catch (e) {
+    try {
+        const { currentUserId, target_userId, channelId } = req.body;
+
+        let channel_entity = await Entity.findOne({
+            cid: channelId,
+        });
+
+        let current_user_entity = await Entity.findOne({
+            where: {
+                uid: currentUserId,
+            },
+        });
+
+        let target_user_entity = await Entity.findOne({
+            where: {
+                uid: target_userId,
+            },
+        });
+
+        let current_user_membership = await Membership.findOne({
+            where: {
+                Role: "A",
+                eid1: current_user_entity.entityId,
+            },
+        });
+
+        let target_user_membership = await Membership.findOne({
+            where: {
+                eid1: target_user_entity.entityId,
+                eid2: channel_entity.entityId,
+            },
+        });
+
+        if (current_user_membership) {
+            await target_user_membership.update({ Role: "A" });
+            res.status(200).json({
+                error: true,
+                message: "user promoted to admin!",
+            });
+        } else {
+            res.status(403).json({
+                error: true,
+                message: "just admin can promot users to admin!",
+            });
+        }
+    } catch (e) {
         console.log(e);
         res.status(500).json({
             error: true,

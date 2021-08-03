@@ -7,4 +7,5 @@ module.exports = (app) => {
     app.post("/join/channel", tokenChecker, channel.joinChannel);
     app.post("/left/channel", tokenChecker, channel.leftChannel);
     app.post("/update/channel", tokenChecker, channel.updateChannelInfo);
+    app.post("/addAdmin/channel", tokenChecker, channel.addAdminForChannel);
 };
