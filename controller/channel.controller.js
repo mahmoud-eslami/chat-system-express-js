@@ -166,4 +166,38 @@ exports.leftChannel = async(req, res) => {
     }
 };
 
-exports.updateChannelInfo = async(req, res) => {};
+exports.updateChannelInfo = async(req, res) => {
+    try {
+        const { new_name, new_description, channelId } = req.body;
+
+        let temp_channel = await Channel.findOne({
+            channelId: channelId,
+        });
+
+        if (new_name !== undefined && new_description === undefined) {
+            await temp_channel.update({ name: new_name });
+        } else if (new_name === undefined && new_description !== undefined) {
+            await temp_channel.update({ description: new_description });
+        } else if (new_name !== undefined && new_description !== undefined) {
+            await temp_channel.update({
+                description: new_description,
+                name: new_name,
+            });
+        } else {
+            res.status(403).json({
+                error: false,
+                message: "please enter new name or description to update channel!",
+            });
+        }
+        res.status(200).json({
+            error: false,
+            message: "Channel info updated!",
+        });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: true,
+            message: e,
+        });
+    }
+};

@@ -6,4 +6,5 @@ module.exports = (app) => {
     app.delete("/delete/channel", tokenChecker, channel.deleteChannel);
     app.post("/join/channel", tokenChecker, channel.joinChannel);
     app.post("/left/channel", tokenChecker, channel.leftChannel);
+    app.post("/update/channel", tokenChecker, channel.updateChannelInfo);
 };
