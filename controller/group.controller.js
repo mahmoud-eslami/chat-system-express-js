@@ -139,8 +139,34 @@ exports.leftGroup = async(req, res) => {
     }
 };
 
-exports.updateGruopInfo = async(req, res) => {
-    try {} catch (e) {
+exports.updateGroupInfo = async(req, res) => {
+    try {
+        const { new_name, new_description, groupId } = req.body;
+
+        let temp_group = await Group.findOne({
+            groupId: groupId,
+        });
+
+        if (new_name !== undefined && new_description === undefined) {
+            await temp_group.update({ name: new_name });
+        } else if (new_name === undefined && new_description !== undefined) {
+            await temp_group.update({ description: new_description });
+        } else if (new_name !== undefined && new_description !== undefined) {
+            await temp_group.update({
+                description: new_description,
+                name: new_name,
+            });
+        } else {
+            res.status(403).json({
+                error: false,
+                message: "please enter new name or description to update group!",
+            });
+        }
+        res.status(200).json({
+            error: false,
+            message: "Channel info updated!",
+        });
+    } catch (e) {
         console.log(e);
         res.status(500).json({ error: true, message: e });
     }

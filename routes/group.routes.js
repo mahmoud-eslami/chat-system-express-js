@@ -6,4 +6,5 @@ module.exports = (app) => {
     app.delete("/delete/group", tokenChecker, group.deleteGroup);
     app.post("/join/group", tokenChecker, group.joinGroup);
     app.post("/left/group", tokenChecker, group.leftGroup);
+    app.post("/update/group", tokenChecker, group.updateGroupInfo);
 };
