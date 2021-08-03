@@ -82,3 +82,66 @@ exports.deleteGroup = async(req, res) => {
         res.status(500).json({ error: true, message: e });
     }
 };
+
+exports.joinGroup = async(req, res) => {
+    try {
+        const { userId, groupId } = req.body;
+
+        let user_entity = await Entity.findOne({
+            uid: userId,
+        });
+
+        let group_entity = await Entity.findOne({
+            gid: groupId,
+        });
+
+        await Membership.create({
+            Role: "U",
+            LastVisitDate: Date.now(),
+            eid1: user_entity.entityId,
+            eid2: group_entity.entityId,
+        });
+
+        res
+            .status(200)
+            .json({ error: false, message: "user joined group successfull!" });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({ error: true, message: e });
+    }
+};
+
+exports.leftGroup = async(req, res) => {
+    try {
+        const { userId, groupId } = req.body;
+
+        let user_entity = await Entity.findOne({
+            uid: userId,
+        });
+
+        let group_entity = await Entity.findOne({
+            gid: groupId,
+        });
+
+        await Membership.destroy({
+            where: {
+                eid1: user_entity.entityId,
+                eid2: group_entity.entityId,
+            },
+        });
+
+        res
+            .status(200)
+            .json({ error: false, message: "user left group successfull!" });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({ error: true, message: e });
+    }
+};
+
+exports.updateGruopInfo = async(req, res) => {
+    try {} catch (e) {
+        console.log(e);
+        res.status(500).json({ error: true, message: e });
+    }
+};

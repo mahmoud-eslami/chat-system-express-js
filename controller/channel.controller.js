@@ -165,3 +165,5 @@ exports.leftChannel = async(req, res) => {
         });
     }
 };
+
+exports.updateChannelInfo = async(req, res) => {};
