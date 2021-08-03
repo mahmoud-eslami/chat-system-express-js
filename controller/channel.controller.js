@@ -37,7 +37,7 @@ exports.createChannel = async(req, res) => {
         console.log(e);
         res.status(500).json({
             error: true,
-            message: e,
+            message: e.toString(),
         });
     }
 };
@@ -87,7 +87,7 @@ exports.deleteChannel = async(req, res) => {
         console.log(e);
         res.status(500).json({
             error: true,
-            message: e,
+            message: e.toString(),
         });
     }
 };
@@ -124,7 +124,7 @@ exports.joinChannel = async(req, res) => {
         console.log(e);
         res.status(500).json({
             error: true,
-            message: e,
+            message: e.toString(),
         });
     }
 };
@@ -161,7 +161,7 @@ exports.leftChannel = async(req, res) => {
         console.log(e);
         res.status(500).json({
             error: true,
-            message: e,
+            message: e.toString(),
         });
     }
 };
@@ -197,7 +197,7 @@ exports.updateChannelInfo = async(req, res) => {
         console.log(e);
         res.status(500).json({
             error: true,
-            message: e,
+            message: e.toString(),
         });
     }
 };
@@ -207,7 +207,7 @@ exports.addAdminForChannel = async(req, res) => {
         console.log(e);
         res.status(500).json({
             error: true,
-            message: e,
+            message: e.toString(),
         });
     }
 };

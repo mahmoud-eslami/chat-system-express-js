@@ -32,7 +32,7 @@ exports.createGroup = async(req, res) => {
         res.status(200).json({ error: false, message: "group created successful" });
     } catch (e) {
         console.log(e);
-        res.status(500).json({ error: true, message: e });
+        res.status(500).json({ error: true, message: e.toString() });
     }
 };
 
@@ -79,7 +79,7 @@ exports.deleteGroup = async(req, res) => {
         }
     } catch (e) {
         console.log(e);
-        res.status(500).json({ error: true, message: e });
+        res.status(500).json({ error: true, message: e.toString() });
     }
 };
 
@@ -107,7 +107,7 @@ exports.joinGroup = async(req, res) => {
             .json({ error: false, message: "user joined group successfull!" });
     } catch (e) {
         console.log(e);
-        res.status(500).json({ error: true, message: e });
+        res.status(500).json({ error: true, message: e.toString() });
     }
 };
 
@@ -135,7 +135,7 @@ exports.leftGroup = async(req, res) => {
             .json({ error: false, message: "user left group successfull!" });
     } catch (e) {
         console.log(e);
-        res.status(500).json({ error: true, message: e });
+        res.status(500).json({ error: true, message: e.toString() });
     }
 };
 
@@ -168,13 +168,17 @@ exports.updateGroupInfo = async(req, res) => {
         });
     } catch (e) {
         console.log(e);
-        res.status(500).json({ error: true, message: e });
+        res.status(500).json({ error: true, message: e.toString() });
     }
 };
 
 exports.addAdminForGroup = async(req, res) => {
     try {
         const { currentUserId, target_userId, groupId } = req.body;
+
+        let group_entity = await Entity.findOne({
+            gid: groupId,
+        });
 
         let current_user_entity = await Entity.findOne({
             where: {
@@ -195,12 +199,30 @@ exports.addAdminForGroup = async(req, res) => {
             },
         });
 
-        // if () {}
+        let target_user_membership = await Membership.findOne({
+            where: {
+                eid1: target_user_entity.entityId,
+                eid2: group_entity.entityId,
+            },
+        });
+
+        if (current_user_membership) {
+            await target_user_membership.update({ Role: "A" });
+            res.status(200).json({
+                error: true,
+                message: "user promoted to admin!",
+            });
+        } else {
+            res.status(403).json({
+                error: true,
+                message: "just admin can promot users to admin!",
+            });
+        }
     } catch (e) {
         console.log(e);
         res.status(500).json({
             error: true,
-            message: e,
+            message: e.toString(),
         });
     }
 };

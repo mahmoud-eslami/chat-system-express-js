@@ -64,7 +64,7 @@ exports.login = async(req, res) => {
         console.log(e);
         res.status(500).json({
             error: true,
-            message: e,
+            message: e.toString(),
         });
     }
 };
@@ -89,7 +89,7 @@ exports.refreshToken = (req, res) => {
         console.log(e);
         res.status(500).json({
             error: true,
-            message: e,
+            message: e.toString(),
         });
     }
 };
@@ -145,7 +145,7 @@ exports.register = async(req, res) => {
         console.log(e);
         res.status(500).json({
             error: true,
-            message: e,
+            message: e.toString(),
         });
     }
 };
@@ -174,6 +174,6 @@ exports.changePasswordInside = async(req, res) => {
         }
     } catch (e) {
         console.log(e);
-        res.status(500).json({ error: true, message: e });
+        res.status(500).json({ error: true, message: e.toString() });
     }
 };
