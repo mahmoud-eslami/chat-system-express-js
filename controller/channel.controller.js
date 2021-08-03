@@ -1,4 +1,4 @@
-const { Entity, Channel } = require("../models/entity.model");
+const { Entity, Channel, User } = require("../models/entity.model");
 const Membership = require("../models/membership.model");
 
 exports.createChannel = async(req, res) => {
@@ -248,6 +248,60 @@ exports.addAdminForChannel = async(req, res) => {
                 message: "just admin can promot users to admin!",
             });
         }
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: true,
+            message: e.toString(),
+        });
+    }
+};
+
+exports.getChannelMember = async(req, res) => {
+    try {
+        let all_data = [];
+
+        const channelId = req.body.channelId;
+
+        let gp_entity = await Entity.findOne({ where: { cid: channelId } });
+
+        let channelMembers = await Membership.findAll({
+            where: { eid2: gp_entity.entityId },
+        });
+
+        for (const element of channelMembers) {
+            let element_entity = await Entity.findOne({
+                where: {
+                    entityId: element.eid1,
+                },
+            });
+            let user_info = await User.findOne({
+                where: {
+                    userId: element_entity.uid,
+                },
+            });
+            const data = {
+                id: element.id,
+                Role: element.Role,
+                LastVisitDate: element.LastVisitDate,
+                createdAt: element.createdAt,
+                user: {
+                    userId: user_info.userId,
+                    name: user_info.name,
+                    phoneNumber: user_info.phoneNumber,
+                    email: user_info.email,
+                    username: user_info.username,
+                    createdAt: user_info.createdAt,
+                },
+            };
+
+            all_data.push(data);
+        }
+
+        res.status(200).json({
+            error: false,
+            message: all_data,
+        });
     } catch (e) {
         console.log(e);
         res.status(500).json({
