@@ -171,3 +171,36 @@ exports.updateGroupInfo = async(req, res) => {
         res.status(500).json({ error: true, message: e });
     }
 };
+
+exports.addAdminForGroup = async(req, res) => {
+    try {
+        const { currentUserId, target_userId, groupId } = req.body;
+
+        let current_user_entity = await Entity.findOne({
+            where: {
+                uid: currentUserId,
+            },
+        });
+
+        let target_user_entity = await Entity.findOne({
+            where: {
+                uid: target_userId,
+            },
+        });
+
+        let current_user_membership = await Membership.findOne({
+            where: {
+                Role: "A",
+                eid1: current_user_entity.entityId,
+            },
+        });
+
+        // if () {}
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: true,
+            message: e,
+        });
+    }
+};
