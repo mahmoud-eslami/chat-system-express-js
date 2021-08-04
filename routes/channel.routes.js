@@ -9,4 +9,9 @@ module.exports = (app) => {
     app.post("/update/channel", tokenChecker, channel.updateChannelInfo);
     app.post("/addAdmin/channel", tokenChecker, channel.addAdminForChannel);
     app.get("/channel/members", tokenChecker, channel.getChannelMember);
+    app.post(
+        "/channel/remove/member",
+        tokenChecker,
+        channel.removeMemberFromChannel
+    );
 };
