@@ -9,4 +9,9 @@ module.exports = (app) => {
     app.post("/update/group", tokenChecker, group.updateGroupInfo);
     app.post("/addAdmin/group", tokenChecker, group.addAdminForGroup);
     app.get("/group/members", tokenChecker, group.getGroupMember);
+    // app.post(
+    //     "/group/remove/member",
+    //     tokenChecker,
+    //     channel.
+    // );
 };

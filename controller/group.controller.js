@@ -280,3 +280,62 @@ exports.getGroupMember = async(req, res) => {
         });
     }
 };
+
+exports.removeMemberFromGroup = async(req, res) => {
+    try {
+        const { currentUserId, targetUserId, groupId } = req.body;
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: true,
+            message: e.toString(),
+        });
+    }
+};
+
+exports.removeMemberFromGroup = async(req, res) => {
+    try {
+        const { currentUserId, targetUserId, groupId } = req.body;
+
+        let current_user_entity = await Entity.findOne({
+            where: { uid: currentUserId },
+        });
+        let target_user_entity = await Entity.findOne({
+            where: { uid: targetUserId },
+        });
+        let group_entity = await Entity.findOne({
+            where: { gid: groupId },
+        });
+
+        let current_user_membership = await Membership.findOne({
+            Role: "A",
+            eid1: current_user_entity.entityId,
+        });
+
+        let target_user_membership = await Membership.findOne({
+            where: {
+                eid1: target_user_entity.entityId,
+                eid2: group_entity.entityId,
+            },
+        });
+
+        if (current_user_membership) {
+            await target_user_membership.destroy();
+            res.status(200).json({
+                error: false,
+                message: "user deleted successfull!",
+            });
+        } else {
+            res.status(403).json({
+                error: false,
+                message: "You can't remove a user!",
+            });
+        }
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: true,
+            message: e.toString(),
+        });
+    }
+};
