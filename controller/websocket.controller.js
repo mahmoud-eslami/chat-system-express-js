@@ -1,5 +1,7 @@
 const WebSocket = require("ws");
 var parse = require("url-parse");
+const { Entity } = require("../models/entity.model");
+const Membership = require("../models/membership.model");
 
 const wss = new WebSocket.Server({ port: 8080 });
 
@@ -14,13 +16,25 @@ wss.on("connection", (connection, request) => {
     connection.userId = parameters.query.userId;
     CLIENT.push(connection);
 
-    connection.on("message", (message) => {
+    connection.on("message", async(message) => {
         var jsonMessage = JSON.parse(message);
         switch (jsonMessage.key) {
             case "addMessage":
                 {
                     connection.send("waiting to add message...");
+                    let temp_sender_Entity = Entity.findOne({
+                        uid: connection.userId,
+                    });
+                    let temp_recieve_Entity = Entity.findOne({
+                        uid: jsonMessage.target_userId,
+                    });
 
+                    let temp_membership = await Membership.findOne({
+                        eid1: temp_sender_Entity.entityId,
+                        eid2: temp_recieve_Entity.entityId,
+                    });
+
+                    if (temp_membership) {} else {}
                     break;
                 }
             case "seenMessage":
