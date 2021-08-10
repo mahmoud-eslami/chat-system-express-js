@@ -108,6 +108,7 @@ app.get("/splitter", (req, res) => {
 require("./routes/auth.routes")(app);
 require("./routes/channel.routes")(app);
 require("./routes/group.routes")(app);
+require("./routes/membership.routes")(app);
 app.listen(config.port, () => console.log("server start listening on 5000"));
 
 async function syncDatabase() {
