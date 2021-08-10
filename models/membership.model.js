@@ -4,6 +4,11 @@ const { Entity, Channel, User, Group } = require("./entity.model");
 
 const Membership = sequelize.define(
     "Membership", {
+        id: {
+            type: Sequelize.INTEGER,
+            autoIncrement: true,
+            primaryKey: true,
+        },
         Role: {
             type: Sequelize.STRING,
             allowNull: false,

@@ -17,3 +17,16 @@ exports.getMembershipOfUser = async(req, res) => {
         res.status(500).json({ error: true, message: e.toString() });
     }
 };
+
+exports.removeSpecificMembership = async(req, res) => {
+    try {
+        const membershipId = req.body.membershipId;
+
+        let temp_membership = await Membership.findOne({
+            where: {},
+        });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({ error: true, message: e.toString() });
+    }
+};
