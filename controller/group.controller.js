@@ -284,18 +284,6 @@ exports.getGroupMember = async(req, res) => {
 exports.removeMemberFromGroup = async(req, res) => {
     try {
         const { currentUserId, targetUserId, groupId } = req.body;
-    } catch (e) {
-        console.log(e);
-        res.status(500).json({
-            error: true,
-            message: e.toString(),
-        });
-    }
-};
-
-exports.removeMemberFromGroup = async(req, res) => {
-    try {
-        const { currentUserId, targetUserId, groupId } = req.body;
 
         let current_user_entity = await Entity.findOne({
             where: { uid: currentUserId },
