@@ -13,6 +13,9 @@ const config = require("./config/config.json");
 const webSocket = require("./controller/websocket.controller");
 var request = require("request");
 const jsdom = require("jsdom");
+const Screenshot = require("url-to-screenshot");
+const fs = require("fs");
+const puppeteer = require("puppeteer");
 
 // adding Helmet to enhance your API's security
 app.use(helmet());
@@ -26,6 +29,15 @@ app.use(morgan("combined"));
 checkDb();
 
 syncDatabase();
+
+app.get("/shot", async(req, res) => {
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.goto("https://www.google.org/");
+    await page.screenshot({ path: "./screenshot1.png" });
+    await browser.close();
+    res.status(200).json("yes");
+});
 
 app.get("/splitter", (req, res) => {
     const url = req.body.url;

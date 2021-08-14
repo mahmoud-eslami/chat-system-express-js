@@ -1,6 +1,7 @@
 const Sequelize = require("sequelize");
 const sequelize = require("../config/database.config");
 const { Entity, Channel, User, Group } = require("./entity.model");
+const Membership = require("./membership.model");
 
 const Message = sequelize.define(
     "Message", {
@@ -42,6 +43,14 @@ Message.hasMany(Message, {
 });
 Message.belongsTo(Message, {
     foreignKey: { name: "replay_mid", allowNull: true },
+});
+
+Membership.hasMany(Message, {
+    foreignKey: { name: "membershipId", allowNull: false },
+});
+
+Message.belongsTo(Membership, {
+    foreignKey: { name: "membershipId", allowNull: false },
 });
 
 module.exports = Message;

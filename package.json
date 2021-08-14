@@ -23,9 +23,12 @@
     "morgan": "^1.10.0",
     "mysql": "^2.18.1",
     "mysql2": "^2.2.5",
+    "puppeteer": "^10.2.0",
+    "request": "^2.88.2",
     "sequelize": "^6.6.4",
-    "sqlite3": "^5.0.2",
+    "sqlite3": "^4.2.0",
     "url-parse": "^1.5.3",
+    "url-to-screenshot": "^1.0.1",
     "ws": "^7.5.3"
   },
   "devDependencies": {

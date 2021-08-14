@@ -1,7 +1,8 @@
 const WebSocket = require("ws");
 var parse = require("url-parse");
-const { Entity } = require("../models/entity.model");
+const { Entity, User } = require("../models/entity.model");
 const Membership = require("../models/membership.model");
+const Message = require("../models/message.model");
 
 const wss = new WebSocket.Server({ port: 8080 });
 
@@ -19,6 +20,47 @@ wss.on("connection", (connection, request) => {
     connection.on("message", async(message) => {
         var jsonMessage = JSON.parse(message);
         switch (jsonMessage.key) {
+            case "getMembershipMessage":
+                {
+                    const membershipId = jsonMessage.membershipId;
+
+                    let data = [];
+                    let messages = await Message.findAll({
+                        where: { membershipId: membershipId },
+                    });
+
+                    for (const message of messages) {
+                        let entity_sender = await Entity.findOne({
+                            where: { uid: message.eid_sender },
+                        });
+
+                        let sender_user = await User.findOne({
+                            where: { userId: entity_sender.uid },
+                        });
+
+                        data.push({
+                            messageId: message.messageId,
+                            viewCount: message.viewCount,
+                            Text: message.Text,
+                            createdAt: message.createdAt,
+                            eid_sender: message.eid_sender,
+                            eid_receiver: message.eid_receiver,
+                            replay_mid: message.replay_mid,
+                            membershipId: message.membershipId,
+                            senderInfo: {
+                                name: sender_user.name,
+                            },
+                        });
+                    }
+
+                    connection.send(
+                        JSON.stringify({
+                            key: jsonMessage.key,
+                            message: data,
+                        })
+                    );
+                    break;
+                }
             case "addMessage":
                 {
                     connection.send("waiting to add message...");
