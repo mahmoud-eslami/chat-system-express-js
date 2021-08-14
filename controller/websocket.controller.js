@@ -48,6 +48,7 @@ wss.on("connection", (connection, request) => {
                             replay_mid: message.replay_mid,
                             membershipId: message.membershipId,
                             senderInfo: {
+                                userId: sender_user.userId,
                                 name: sender_user.name,
                             },
                         });
@@ -64,37 +65,56 @@ wss.on("connection", (connection, request) => {
             case "addMessage":
                 {
                     connection.send("waiting to add message...");
-                    const eidOrig = jsonMessage.eidOrig;
+                    const userIdOrig = jsonMessage.userIdOrig;
                     let userIds = [];
                     let temp_orig_Entity = null;
 
-                    if (eidOrig != null) {
-                        temp_orig_Entity = await Entity.findOne({ where: { uid: eidOrig } });
+                    if (userIdOrig != null) {
+                        temp_orig_Entity = await Entity.findOne({
+                            where: { uid: userIdOrig },
+                        });
+                        console.log(temp_orig_Entity);
                     }
 
                     let temp_sender_Entity = Entity.findOne({
-                        uid: connection.userId,
-                    });
-                    let temp_recieve_Entity = Entity.findOne({
-                        uid: jsonMessage.target_userId,
+                        where: {
+                            uid: connection.userId,
+                        },
                     });
 
-                    let temp_membership = await Membership.findOne({
-                        eid1: temp_sender_Entity.entityId,
-                        eid2: temp_recieve_Entity.entityId,
+                    console.log(temp_sender_Entity);
+
+                    let temp_recieve_Entity = Entity.findOne({
+                        where: {
+                            uid: jsonMessage.target_userId,
+                        },
                     });
+
+                    console.log(temp_recieve_Entity);
+
+                    // let temp_membership = await Membership.findOne({
+                    //     where: {
+                    //         eid1: temp_sender_Entity.entityId,
+                    //         eid2: temp_recieve_Entity.entityId,
+                    //     },
+                    // });
 
                     let createdMessage = await Message.create({
-                        Text: {
+                        Text: JSON.stringify({
                             content: jsonMessage.content,
                             eid_orig: temp_orig_Entity,
-                        },
-                        eid_sender: temp_sender_Entity,
-                        eid_receiver: temp_recieve_Entity,
+                        }),
+                        viewCount: 0,
+                        eid_sender: 1,
+                        eid_receiver: 1,
+                        membershipId: 1,
                     });
 
+                    console.log(createdMessage);
+
                     if (temp_membership) {
-                        connection.sendForSpecificUsers(
+                        sendForSpecificUsers(
+                            [1, 2],
                             JSON.stringify({
                                 key: jsonMessage.key,
                                 message: createdMessage,
@@ -105,17 +125,20 @@ wss.on("connection", (connection, request) => {
                 }
             case "seenMessage":
                 {
-                    connection.send("seen message called");
+                    const mId = jsonMessage.mId;
+                    connection.send("jaja");
                     break;
                 }
             case "deleteMessage":
                 {
-                    connection.send("delete message called");
+                    const mId = jsonMessage.mId;
+                    connection.send("jaja");
                     break;
                 }
-            case "editMessage":
+            case "selfDeleteMessage":
                 {
-                    connection.send("edit message called");
+                    const mId = jsonMessage.mId;
+
                     break;
                 }
         }

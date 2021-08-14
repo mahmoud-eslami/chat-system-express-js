@@ -16,8 +16,12 @@ const Message = sequelize.define(
             default: 0,
         },
         Text: {
-            type: Sequelize.STRING,
+            type: Sequelize.JSON,
             allowNull: false,
+        },
+        selfDelete: {
+            type: Sequelize.INTEGER,
+            allowNull: true,
         },
     }, {
         freezeTableName: true,
