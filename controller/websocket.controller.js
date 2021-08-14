@@ -64,6 +64,14 @@ wss.on("connection", (connection, request) => {
             case "addMessage":
                 {
                     connection.send("waiting to add message...");
+                    const eidOrig = jsonMessage.eidOrig;
+                    let userIds = [];
+                    let temp_orig_Entity = null;
+
+                    if (eidOrig != null) {
+                        temp_orig_Entity = await Entity.findOne({ where: { uid: eidOrig } });
+                    }
+
                     let temp_sender_Entity = Entity.findOne({
                         uid: connection.userId,
                     });
@@ -76,7 +84,23 @@ wss.on("connection", (connection, request) => {
                         eid2: temp_recieve_Entity.entityId,
                     });
 
-                    if (temp_membership) {} else {}
+                    let createdMessage = await Message.create({
+                        Text: {
+                            content: jsonMessage.content,
+                            eid_orig: temp_orig_Entity,
+                        },
+                        eid_sender: temp_sender_Entity,
+                        eid_receiver: temp_recieve_Entity,
+                    });
+
+                    if (temp_membership) {
+                        connection.sendForSpecificUsers(
+                            JSON.stringify({
+                                key: jsonMessage.key,
+                                message: createdMessage,
+                            })
+                        );
+                    }
                     break;
                 }
             case "seenMessage":
@@ -101,6 +125,16 @@ wss.on("connection", (connection, request) => {
 function sendAll(message) {
     CLIENT.forEach((element) => {
         element.send(message);
+    });
+}
+
+function sendForSpecificUsers(userIdArray, message) {
+    userIdArray.forEach((userId) => {
+        CLIENT.forEach((client) => {
+            if (client.userId == userId) {
+                client.send(message);
+            }
+        });
     });
 }
 
