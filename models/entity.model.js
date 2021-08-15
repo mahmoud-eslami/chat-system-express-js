@@ -8,6 +8,10 @@ const Entity = sequelize.define(
             autoIncrement: true,
             primaryKey: true,
         },
+        type: {
+            type: Sequelize.STRING,
+            allowNull: false,
+        },
     }, {
         timestamps: false,
         updatedAt: false,

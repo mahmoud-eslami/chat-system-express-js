@@ -19,6 +19,7 @@ exports.createGroup = async(req, res) => {
         // create entity after create group
         let group_entity = await Entity.create({
             gid: new_group.groupId,
+            type: "G",
         });
 
         // create membership for user as admin

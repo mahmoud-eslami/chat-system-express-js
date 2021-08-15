@@ -134,6 +134,7 @@ exports.register = async(req, res) => {
             // create entity after create user
             await Entity.create({
                 uid: created_user.userId,
+                type: "U",
             });
 
             res.status(200).json({

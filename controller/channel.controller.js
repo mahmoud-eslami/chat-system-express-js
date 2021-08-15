@@ -20,6 +20,7 @@ exports.createChannel = async(req, res) => {
         // create entity after create channel
         let new_channel_entity = await Entity.create({
             cid: new_channel.channelId,
+            type: "C",
         });
 
         // create membership for user as admin
