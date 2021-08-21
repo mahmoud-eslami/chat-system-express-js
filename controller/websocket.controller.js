@@ -132,7 +132,69 @@ wss.on("connection", (connection, request) => {
             case "deleteMessage":
                 {
                     const mId = jsonMessage.mId;
-                    connection.send("jaja");
+
+                    let message_instance = await Message.findOne({
+                        where: {
+                            messageId: mId,
+                        },
+                    });
+
+                    let receiver_entity = await Entity.findOne({
+                        where: {
+                            entityId: message_instance.eid_receiver,
+                        },
+                    });
+
+                    let entity_subscriber = [];
+
+                    if (receiver_entity.type == "C") {
+                        // here we should get all channel member and send message to each one
+
+                        let temp_memberships = await Membership.findAll({
+                            where: {
+                                eid2: receiver_entity.entityId,
+                            },
+                        });
+
+                        for (const item of temp_memberships) {
+                            let temp_entity = await Entity.findOne({
+                                where: { entityId: item.eid1 },
+                            });
+
+                            entity_subscriber.push(temp_entity.uid);
+                        }
+                    } else if (receiver_entity.type == "G") {
+                        // here we should get all group member and send message to each one
+
+                        let temp_memberships = await Membership.findAll({
+                            where: {
+                                eid2: receiver_entity.entityId,
+                            },
+                        });
+
+                        for (const item of temp_memberships) {
+                            let temp_entity = await Entity.findOne({
+                                where: { entityId: item.eid1 },
+                            });
+
+                            entity_subscriber.push(temp_entity.uid);
+                        }
+                    } else if (receiver_entity.type == "U") {
+                        // here we should get user and send message
+
+                        entity_subscriber.push(receiver_entity.uid);
+                    }
+
+                    await message_instance.destroy();
+
+                    sendForSpecificUsers(
+                        entity_subscriber,
+                        JSON.stringify({
+                            key: jsonMessage.key,
+                            message: mId,
+                        })
+                    );
+
                     break;
                 }
             case "selfDeleteMessage":
