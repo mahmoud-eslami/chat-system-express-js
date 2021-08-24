@@ -197,6 +197,30 @@ wss.on("connection", (connection, request) => {
 
                     break;
                 }
+            case "replayMessage":
+                {
+                    const mId = jsonMessage.mId;
+                    const mContent = jsonMessage.mContent;
+                    const eid_sender = jsonMessage.eid_sender;
+                    const eid_receiver = jsonMessage.eid_receiver;
+                    const membershipId = jsonMessage.membershipId;
+
+                    let new_message = await Message.create({
+                        viewCount: 0,
+                        Text: mContent,
+                        selfDelete: 0,
+                        eid_sender: eid_sender,
+                        eid_receiver: eid_receiver,
+                        replay_mid: mId,
+                        membershipId: membershipId,
+                    });
+
+                    connection.send(
+                        JSON.stringify({ key: jsonMessage.key, message: new_message })
+                    );
+
+                    break;
+                }
             case "selfDeleteMessage":
                 {
                     const mId = jsonMessage.mId;
