@@ -204,6 +204,7 @@ wss.on("connection", (connection, request) => {
                     const eid_sender = jsonMessage.eid_sender;
                     const eid_receiver = jsonMessage.eid_receiver;
                     const membershipId = jsonMessage.membershipId;
+                    var userIdList = [];
 
                     let new_message = await Message.create({
                         viewCount: 0,
@@ -215,7 +216,25 @@ wss.on("connection", (connection, request) => {
                         membershipId: membershipId,
                     });
 
-                    connection.send(
+                    let entity_receiver = await Entity.findOne({
+                        where: { entityId: eid_receiver },
+                    });
+
+                    if (entity_receiver.type === "U") {
+                        userIdList.push(connection.userId);
+                        userIdList.push(entity_receiver.uid);
+                    } else if (entity_receiver.type === "C") {
+                        // todo : we should send message to all user of channel
+                        userIdList.push(connection.userId);
+                        userIdList.push(entity_receiver.uid);
+                    } else if (entity_receiver.type === "G") {
+                        // todo : we should send message to all user of gp
+                        userIdList.push(connection.userId);
+                        userIdList.push(entity_receiver.uid);
+                    }
+
+                    sendForSpecificUsers(
+                        userIdList,
                         JSON.stringify({ key: jsonMessage.key, message: new_message })
                     );
 
