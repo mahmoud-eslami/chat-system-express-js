@@ -201,6 +201,16 @@ wss.on("connection", (connection, request) => {
                 {
                     const mId = jsonMessage.mId;
 
+                    let message_instance = await Message.findOne({
+                        where: {
+                            messageId: mId,
+                        },
+                    });
+
+                    await message_instance.update({ selfDelete: 1 });
+
+                    connection.send(JSON.stringify({ key: jsonMessage.key, message: mId }));
+
                     break;
                 }
         }
