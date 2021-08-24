@@ -3,6 +3,14 @@ const sequelize = require("../config/database.config");
 const { Entity, Channel, User, Group } = require("./entity.model");
 const Membership = require("./membership.model");
 
+const seenMessage = sequelize.define("seenMessage", {
+    id: {
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+    },
+});
+
 const Message = sequelize.define(
     "Message", {
         messageId: {
@@ -57,4 +65,20 @@ Message.belongsTo(Membership, {
     foreignKey: { name: "membershipId", allowNull: false },
 });
 
-module.exports = Message;
+// seen message fk
+
+Message.hasMany(seenMessage, {
+    foreignKey: { name: "mid", allowNull: true },
+});
+seenMessage.belongsTo(Message, {
+    foreignKey: { name: "mid", allowNull: true },
+});
+
+Entity.hasMany(seenMessage, {
+    foreignKey: { name: "eid", allowNull: true },
+});
+seenMessage.belongsTo(Entity, {
+    foreignKey: { name: "eid", allowNull: true },
+});
+
+module.exports = { Message, seenMessage };

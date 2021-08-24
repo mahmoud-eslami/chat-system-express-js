@@ -260,6 +260,13 @@ wss.on("connection", (connection, request) => {
     });
 });
 
+function messageStruct(messageContent, eid_original) {
+    return {
+        content: messageContent,
+        eif_original: eid_original,
+    };
+}
+
 function sendAll(message) {
     CLIENT.forEach((element) => {
         element.send(message);
