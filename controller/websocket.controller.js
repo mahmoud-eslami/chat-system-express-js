@@ -2,7 +2,7 @@ const WebSocket = require("ws");
 var parse = require("url-parse");
 const { Entity, User } = require("../models/entity.model");
 const Membership = require("../models/membership.model");
-const Message = require("../models/message.model");
+const { Message, seenMessage } = require("../models/message.model");
 
 const wss = new WebSocket.Server({ port: 8080 });
 
@@ -126,7 +126,28 @@ wss.on("connection", (connection, request) => {
             case "seenMessage":
                 {
                     const mId = jsonMessage.mId;
-                    connection.send("jaja");
+
+                    let entity = await Entity.findOne({
+                        where: { uid: connection.userId },
+                    });
+
+                    await seenMessage.create({
+                        mid: mId,
+                        eid: entity.entityId,
+                    });
+
+                    await Message.increment("viewCount", {
+                        by: 1,
+                        where: { messageId: mId },
+                    });
+
+                    connection.send(
+                        JSON.stringify({
+                            key: jsonMessage.key,
+                            message: mId,
+                        })
+                    );
+
                     break;
                 }
             case "deleteMessage":
