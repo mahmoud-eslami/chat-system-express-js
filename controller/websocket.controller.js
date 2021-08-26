@@ -23,10 +23,16 @@ wss.on("connection", (connection, request) => {
             case "getMembershipMessage":
                 {
                     const membershipId = jsonMessage.membershipId;
+                    const page = jsonMessage.page;
+                    const pageSize = jsonMessage.pageSize;
+                    let offset = page * pageSize;
+                    let limit = pageSize;
 
                     let data = [];
                     let messages = await Message.findAll({
                         where: { membershipId: membershipId },
+                        offset: offset,
+                        limit: limit,
                     });
 
                     for (const message of messages) {
@@ -57,6 +63,7 @@ wss.on("connection", (connection, request) => {
                     connection.send(
                         JSON.stringify({
                             key: jsonMessage.key,
+                            currentPage: page,
                             message: data,
                         })
                     );
