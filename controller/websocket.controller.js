@@ -71,63 +71,22 @@ wss.on("connection", (connection, request) => {
                 }
             case "addMessage":
                 {
-                    connection.send("waiting to add message...");
-                    const userIdOrig = jsonMessage.userIdOrig;
-                    let userIds = [];
-                    let temp_orig_Entity = null;
+                    const eid_sender = jsonMessage.eid_sender;
+                    const eid_receiver = jsonMessage.eid_receiver;
+                    const msg_content = jsonMessage.msg_content;
+                    const membership_id = jsonMessage.membership_id;
 
-                    if (userIdOrig != null) {
-                        temp_orig_Entity = await Entity.findOne({
-                            where: { uid: userIdOrig },
-                        });
-                        console.log(temp_orig_Entity);
-                    }
-
-                    let temp_sender_Entity = Entity.findOne({
-                        where: {
-                            uid: connection.userId,
-                        },
-                    });
-
-                    console.log(temp_sender_Entity);
-
-                    let temp_recieve_Entity = Entity.findOne({
-                        where: {
-                            uid: jsonMessage.target_userId,
-                        },
-                    });
-
-                    console.log(temp_recieve_Entity);
-
-                    // let temp_membership = await Membership.findOne({
-                    //     where: {
-                    //         eid1: temp_sender_Entity.entityId,
-                    //         eid2: temp_recieve_Entity.entityId,
-                    //     },
-                    // });
-
-                    let createdMessage = await Message.create({
-                        Text: JSON.stringify({
-                            content: jsonMessage.content,
-                            eid_orig: temp_orig_Entity,
-                        }),
+                    let created_message = Message.create({
                         viewCount: 0,
-                        eid_sender: 1,
-                        eid_receiver: 1,
-                        membershipId: 1,
+                        Text: messageStruct(msg_content, null),
+                        selfDelete: 0,
+                        eid_sender: eid_sender,
+                        eid_receiver: eid_receiver,
+                        membershipId: membership_id,
                     });
 
-                    console.log(createdMessage);
+                    connection.send(JSON.stringify(created_message));
 
-                    if (temp_membership) {
-                        sendForSpecificUsers(
-                            [1, 2],
-                            JSON.stringify({
-                                key: jsonMessage.key,
-                                message: createdMessage,
-                            })
-                        );
-                    }
                     break;
                 }
             case "seenMessage":
@@ -291,7 +250,7 @@ wss.on("connection", (connection, request) => {
 function messageStruct(messageContent, eid_original) {
     return {
         content: messageContent,
-        eif_original: eid_original,
+        eid_original: eid_original,
     };
 }
 
