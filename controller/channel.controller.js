@@ -1,5 +1,47 @@
 const { Entity, Channel, User } = require("../models/entity.model");
 const Membership = require("../models/membership.model");
+const Sequelize = require("sequelize");
+const Op = Sequelize.Op;
+
+exports.seachChannel = async(req, res) => {
+    try {
+        const query = req.body.query.toLowerCase();
+        let final_channels = [];
+
+        let channels = await Channel.findAll({
+            where: {
+                name: {
+                    [Op.like]: "%" + query + "%",
+                },
+            },
+        });
+
+        for (const item of channels) {
+            let temp_entity = await Entity.findOne({
+                where: { cid: item.channelId },
+            });
+            final_channels.push({
+                channelId: item.channelId,
+                entityId: temp_entity.entityId,
+                name: item.name,
+                description: item.description,
+                mid: item.mid,
+                createdAt: item.createdAt,
+            });
+        }
+
+        res.status(200).json({
+            error: true,
+            message: final_channels,
+        });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: true,
+            message: e.toString(),
+        });
+    }
+};
 
 exports.createChannel = async(req, res) => {
     try {

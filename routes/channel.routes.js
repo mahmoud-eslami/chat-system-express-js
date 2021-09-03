@@ -14,4 +14,5 @@ module.exports = (app) => {
         tokenChecker,
         channel.removeMemberFromChannel
     );
+    app.get("/search/channel", channel.seachChannel);
 };
