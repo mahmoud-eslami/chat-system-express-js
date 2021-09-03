@@ -1,4 +1,4 @@
-const { Entity, User } = require("../models/entity.model");
+const { Entity, User, Group, Channel } = require("../models/entity.model");
 const jwt = require("jsonwebtoken");
 const config = require("../config/config.json");
 const bcrypt = require("bcrypt");
@@ -6,31 +6,63 @@ const bcrypt = require("bcrypt");
 // todo : should use redis to store refresh token
 const refreshTokenList = [];
 
-exports.getUserByEid = async(req, res) => {
+exports.getEntity = async(req, res) => {
     try {
         const eid = req.body.eid;
 
-        let user_entity = await Entity.findOne({
+        let temp_entity = await Entity.findOne({
             where: { entityId: eid },
         });
 
-        if (user_entity) {
-            let temp_user = await User.findOne({
-                where: { userId: user_entity.uid },
-            });
+        if (temp_entity) {
+            if (temp_entity.type === "U") {
+                let temp_user = await User.findOne({
+                    where: { userId: temp_entity.uid },
+                });
 
-            res.status(200).json({
-                error: false,
-                message: {
-                    userId: temp_user.userId,
-                    entityId: user_entity.entityId,
-                    name: temp_user.name,
-                    phoneNumber: temp_user.phoneNumber,
-                    email: temp_user.email,
-                    username: temp_user.username,
-                    createdAt: temp_user.createdAt,
-                },
-            });
+                res.status(200).json({
+                    error: false,
+                    message: {
+                        userId: temp_user.userId,
+                        entityId: temp_entity.entityId,
+                        name: temp_user.name,
+                        phoneNumber: temp_user.phoneNumber,
+                        email: temp_user.email,
+                        username: temp_user.username,
+                        createdAt: temp_user.createdAt,
+                    },
+                });
+            } else if (temp_entity.type === "G") {
+                let temp_gp = await Group.findOne({
+                    where: { groupId: temp_entity.gid },
+                });
+
+                res.status(200).json({
+                    error: false,
+                    message: {
+                        entityId: temp_entity.entityId,
+                        groupId: temp_gp.groupId,
+                        name: temp_gp.name,
+                        description: temp_gp.description,
+                        mid: temp_gp.mid,
+                    },
+                });
+            } else if (temp_entity.type === "C") {
+                let temp_channel = await Channel.findOne({
+                    where: { channelId: temp_entity.cid },
+                });
+
+                res.status(200).json({
+                    error: false,
+                    message: {
+                        entityId: temp_entity.entityId,
+                        channelId: temp_channel.channelId,
+                        name: temp_channel.name,
+                        description: temp_channel.description,
+                        mid: temp_channel.mid,
+                    },
+                });
+            }
         } else {
             res.status(404).json({
                 error: true,

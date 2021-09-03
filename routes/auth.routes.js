@@ -5,6 +5,6 @@ module.exports = (app) => {
     app.post("/refreshToken", auth.refreshToken);
     app.post("/register", auth.register);
     app.post("/changePasswordInside", auth.changePasswordInside);
-    app.get("/get/user", auth.getUserByEid);
+    app.get("/get/entity", auth.getEntity);
     app.get("/get/username", auth.getUsername);
 };
