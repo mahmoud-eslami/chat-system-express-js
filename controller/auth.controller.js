@@ -96,8 +96,7 @@ exports.refreshToken = (req, res) => {
 
 exports.register = async(req, res) => {
     try {
-        const { username, password, name, email, isEmailAuth, phone_number } =
-        req.body;
+        const { username, password, name, email, phone_number } = req.body;
         const salt = await bcrypt.genSalt(config.saltRound);
         let hashed_password = await bcrypt.hash(password, salt);
 
@@ -114,23 +113,15 @@ exports.register = async(req, res) => {
             });
         } else {
             let created_user;
-            if (isEmailAuth === true) {
-                // todo : send email for authentication
-                created_user = await User.create({
-                    name: name,
-                    username: username,
-                    password: hashed_password,
-                    email: email,
-                });
-            } else {
-                // todo : send sms for authentication
-                created_user = await User.create({
-                    name: name,
-                    username: username,
-                    password: hashed_password,
-                    phoneNumber: phone_number,
-                });
-            }
+            created_user = await User.create({
+                name: name,
+                username: username,
+                password: hashed_password,
+                email: email,
+                verified: 0,
+                phoneNumber: phone_number,
+            });
+
             // create entity after create user
             await Entity.create({
                 uid: created_user.userId,

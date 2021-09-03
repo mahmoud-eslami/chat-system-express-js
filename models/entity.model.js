@@ -50,6 +50,10 @@ const User = sequelize.define(
             autoIncrement: true,
             primaryKey: true,
         },
+        verified: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+        },
         name: {
             type: Sequelize.STRING,
             allowNull: false,
