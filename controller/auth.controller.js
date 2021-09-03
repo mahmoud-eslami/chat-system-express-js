@@ -6,6 +6,46 @@ const bcrypt = require("bcrypt");
 // todo : should use redis to store refresh token
 const refreshTokenList = [];
 
+exports.getUserByEid = async(req, res) => {
+    try {
+        const eid = req.body.eid;
+
+        let user_entity = await Entity.findOne({
+            where: { entityId: eid },
+        });
+
+        if (user_entity) {
+            let temp_user = await User.findOne({
+                where: { userId: user_entity.uid },
+            });
+
+            res.status(200).json({
+                error: false,
+                message: {
+                    userId: temp_user.userId,
+                    entityId: user_entity.entityId,
+                    name: temp_user.name,
+                    phoneNumber: temp_user.phoneNumber,
+                    email: temp_user.email,
+                    username: temp_user.username,
+                    createdAt: temp_user.createdAt,
+                },
+            });
+        } else {
+            res.status(404).json({
+                error: true,
+                message: "User not found!",
+            });
+        }
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: true,
+            message: e.toString(),
+        });
+    }
+};
+
 exports.getUsername = async(req, res) => {
     try {
         const username = req.body.username;
