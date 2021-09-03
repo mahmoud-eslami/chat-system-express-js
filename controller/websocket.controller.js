@@ -20,6 +20,19 @@ wss.on("connection", (connection, request) => {
     connection.on("message", async(message) => {
         var jsonMessage = JSON.parse(message);
         switch (jsonMessage.key) {
+            case "forwardMessage":
+                {
+                    const message_id = jsonMessage.message_id;
+                    const eid_sender = jsonMessage.eid_sender;
+                    const eid_receiver = jsonMessage.eid_receiver;
+                    const membership_id = jsonMessage.membership_id;
+
+                    let message_instance = await Message.findOne({
+                        where: { messageId: message_id },
+                    });
+
+                    break;
+                }
             case "getMembershipMessage":
                 {
                     const membershipId = jsonMessage.membershipId;
