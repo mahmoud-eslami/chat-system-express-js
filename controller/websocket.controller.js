@@ -26,10 +26,77 @@ wss.on("connection", (connection, request) => {
                     const eid_sender = jsonMessage.eid_sender;
                     const eid_receiver = jsonMessage.eid_receiver;
                     const membership_id = jsonMessage.membership_id;
+                    let users = [];
 
                     let message_instance = await Message.findOne({
                         where: { messageId: message_id },
                     });
+
+                    let receiver_entity = await Entity.findOne({
+                        where: {
+                            entityId: eid_receiver,
+                        },
+                    });
+
+                    let new_message = await Message.create({
+                        viewCount: 0,
+                        Text: messageStruct(
+                            message_instance.Text["content"],
+                            message_instance.eid_sender
+                        ),
+                        selfDelete: 0,
+                        eid_sender: eid_sender,
+                        eid_receiver: eid_receiver,
+                        membershipId: membership_id,
+                    });
+
+                    if (receiver_entity.type === "U") {
+                        users.push(connection.userId);
+                        users.push(receiver_entity.uid);
+                    } else if (receiver_entity.type === "C") {
+                        users.push(connection.userId);
+
+                        let memberships = await Membership.findAll({
+                            where: {
+                                id: membership_id,
+                            },
+                        });
+
+                        // add uid of entities to users array
+                        for (const item of memberships) {
+                            let temp_entity = await Entity.findOne({
+                                where: {
+                                    entityId: item.eid1,
+                                },
+                            });
+
+                            users.push(temp_entity.uid);
+                        }
+                    } else if (receiver_entity.type === "G") {
+                        users.push(connection.userId);
+
+                        let memberships = await Membership.findAll({
+                            where: {
+                                id: membership_id,
+                            },
+                        });
+
+                        // add uid of entities to users array
+                        for (const item of memberships) {
+                            let temp_entity = await Entity.findOne({
+                                where: {
+                                    entityId: item.eid1,
+                                },
+                            });
+
+                            users.push(temp_entity.uid);
+                        }
+                    }
+
+                    sendForSpecificUsers(
+                        users,
+                        JSON.stringify({ key: jsonMessage.key, message: new_message })
+                    );
 
                     break;
                 }
@@ -92,7 +159,7 @@ wss.on("connection", (connection, request) => {
 
                     let receiver_entity = await Entity.findOne({
                         where: {
-                            entityId: message_instance.eid_receiver,
+                            entityId: eid_receiver,
                         },
                     });
 
