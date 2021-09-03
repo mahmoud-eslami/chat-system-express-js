@@ -7,4 +7,5 @@ module.exports = (app) => {
     app.post("/changePasswordInside", auth.changePasswordInside);
     app.get("/get/entity", auth.getEntity);
     app.get("/get/username", auth.getUsername);
+    app.get("/search/users", auth.searchUsers);
 };

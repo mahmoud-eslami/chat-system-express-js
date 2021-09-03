@@ -1,10 +1,53 @@
 const { Entity, User, Group, Channel } = require("../models/entity.model");
+const Sequelize = require("sequelize");
+const Op = Sequelize.Op;
 const jwt = require("jsonwebtoken");
 const config = require("../config/config.json");
 const bcrypt = require("bcrypt");
 
 // todo : should use redis to store refresh token
 const refreshTokenList = [];
+
+exports.searchUsers = async(req, res) => {
+    try {
+        const query = req.body.query.toLowerCase();
+        let final_users = [];
+
+        let users = await User.findAll({
+            where: {
+                username: {
+                    [Op.like]: "%" + query + "%",
+                },
+            },
+        });
+
+        for (const item of users) {
+            let temp_entity = await Entity.findOne({
+                where: { uid: item.userId },
+            });
+            final_users.push({
+                userId: item.userId,
+                entityId: temp_entity.entityId,
+                name: item.name,
+                phoneNumber: item.phoneNumber,
+                email: item.email,
+                username: item.username,
+                createdAt: item.createdAt,
+            });
+        }
+
+        res.status(200).json({
+            error: true,
+            message: final_users,
+        });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: true,
+            message: e.toString(),
+        });
+    }
+};
 
 exports.getEntity = async(req, res) => {
     try {
