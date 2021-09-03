@@ -75,8 +75,15 @@ wss.on("connection", (connection, request) => {
                     const eid_receiver = jsonMessage.eid_receiver;
                     const msg_content = jsonMessage.msg_content;
                     const membership_id = jsonMessage.membership_id;
+                    let users = [];
 
-                    let created_message = Message.create({
+                    let receiver_entity = await Entity.findOne({
+                        where: {
+                            entityId: message_instance.eid_receiver,
+                        },
+                    });
+
+                    let created_message = await Message.create({
                         viewCount: 0,
                         Text: messageStruct(msg_content, null),
                         selfDelete: 0,
@@ -85,7 +92,52 @@ wss.on("connection", (connection, request) => {
                         membershipId: membership_id,
                     });
 
-                    connection.send(JSON.stringify(created_message));
+                    if (receiver_entity.type === "U") {
+                        users.push(connection.userId);
+                        users.push(receiver_entity.uid);
+                    } else if (receiver_entity.type === "C") {
+                        users.push(connection.userId);
+
+                        let memberships = await Membership.findAll({
+                            where: {
+                                id: membership_id,
+                            },
+                        });
+
+                        // add uid of entities to users array
+                        for (const item of memberships) {
+                            let temp_entity = await Entity.findOne({
+                                where: {
+                                    entityId: item.eid1,
+                                },
+                            });
+
+                            users.push(temp_entity.uid);
+                        }
+                    } else if (receiver_entity.type === "G") {
+                        users.push(connection.userId);
+
+                        let memberships = await Membership.findAll({
+                            where: {
+                                id: membership_id,
+                            },
+                        });
+
+                        // add uid of entities to users array
+                        for (const item of memberships) {
+                            let temp_entity = await Entity.findOne({
+                                where: {
+                                    entityId: item.eid1,
+                                },
+                            });
+
+                            users.push(temp_entity.uid);
+                        }
+                    }
+                    sendForSpecificUsers(
+                        users,
+                        JSON.stringify({ key: jsonMessage.key, message: created_message })
+                    );
 
                     break;
                 }
@@ -269,5 +321,7 @@ function sendForSpecificUsers(userIdArray, message) {
         });
     });
 }
+
+module.exports = wss;
 
 module.exports = wss;
