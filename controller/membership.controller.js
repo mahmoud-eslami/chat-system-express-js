@@ -7,11 +7,18 @@ exports.getMembershipOfUser = async(req, res) => {
 
         let temp_user_entity = await Entity.findOne({ where: { uid: userId } });
 
-        let user_membership = await Membership.findAll({
+        let user_membership_first = await Membership.findAll({
             where: { eid1: temp_user_entity.entityId },
         });
 
-        res.status(200).json({ error: false, message: user_membership });
+        let user_membership_second = await Membership.findAll({
+            where: { eid2: temp_user_entity.entityId },
+        });
+
+        res.status(200).json({
+            error: false,
+            message: user_membership_first.concat(user_membership_second),
+        });
     } catch (e) {
         console.log(e);
         res.status(500).json({ error: true, message: e.toString() });
