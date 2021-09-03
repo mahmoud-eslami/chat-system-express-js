@@ -1,5 +1,47 @@
 const { Entity, Group, User } = require("../models/entity.model");
 const Membership = require("../models/membership.model");
+const Sequelize = require("sequelize");
+const Op = Sequelize.Op;
+
+exports.searchGroup = async(req, res) => {
+    try {
+        const query = req.body.query.toLowerCase();
+        let final_Groups = [];
+
+        let groups = await Group.findAll({
+            where: {
+                name: {
+                    [Op.like]: "%" + query + "%",
+                },
+            },
+        });
+
+        for (const item of groups) {
+            let temp_entity = await Entity.findOne({
+                where: { gid: item.groupId },
+            });
+            final_Groups.push({
+                groupId: item.groupId,
+                entityId: temp_entity.entityId,
+                name: item.name,
+                description: item.description,
+                mid: item.mid,
+                createdAt: item.createdAt,
+            });
+        }
+
+        res.status(200).json({
+            error: true,
+            message: final_Groups,
+        });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: true,
+            message: e.toString(),
+        });
+    }
+};
 
 exports.createGroup = async(req, res) => {
     try {

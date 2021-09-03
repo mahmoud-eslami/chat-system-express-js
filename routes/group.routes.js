@@ -10,4 +10,5 @@ module.exports = (app) => {
     app.post("/addAdmin/group", tokenChecker, group.addAdminForGroup);
     app.get("/group/members", tokenChecker, group.getGroupMember);
     app.post("/group/remove/member", tokenChecker, group.removeMemberFromGroup);
+    app.get("/group/search", group.searchGroup);
 };
