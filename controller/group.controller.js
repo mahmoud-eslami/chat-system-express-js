@@ -3,6 +3,49 @@ const Membership = require("../models/membership.model");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
+exports.unpinMessage = async(req, res) => {
+    try {
+        const gid = req.body.gid;
+
+        let group = await Group.findOne({ where: { groupId: gid } });
+
+        group.update({ mid: null });
+
+        res.status(200).json({
+            error: false,
+            message: "Message unpinned!",
+        });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: true,
+            message: e.toString(),
+        });
+    }
+};
+
+exports.pinMessage = async(req, res) => {
+    try {
+        const mid = req.body.mid;
+        const gid = req.body.gid;
+
+        let group = await Group.findOne({ where: { groupId: gid } });
+
+        group.update({ mid: mid });
+
+        res.status(200).json({
+            error: false,
+            message: "Message pinned!",
+        });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: true,
+            message: e.toString(),
+        });
+    }
+};
+
 exports.searchGroup = async(req, res) => {
     try {
         const query = req.body.query.toLowerCase();

@@ -2,6 +2,7 @@ const { Entity, Channel, User } = require("../models/entity.model");
 const Membership = require("../models/membership.model");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
+
 exports.unpinMessage = async(req, res) => {
     try {
         const cid = req.body.cid;

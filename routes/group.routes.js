@@ -11,4 +11,6 @@ module.exports = (app) => {
     app.get("/group/members", tokenChecker, group.getGroupMember);
     app.post("/group/remove/member", tokenChecker, group.removeMemberFromGroup);
     app.get("/group/search", group.searchGroup);
+    app.post("/group/pin/message", group.pinMessage);
+    app.post("/group/unpin/message", group.unpinMessage);
 };
