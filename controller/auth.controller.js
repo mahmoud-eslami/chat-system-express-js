@@ -71,7 +71,6 @@ exports.login = async(req, res) => {
 
 exports.refreshToken = (req, res) => {
     try {
-        console.log(refreshTokenList);
         const { token, refreshToken } = req.body;
 
         if (refreshTokenList.includes(refreshToken)) {
@@ -118,7 +117,6 @@ exports.register = async(req, res) => {
                 username: username,
                 password: hashed_password,
                 email: email,
-                verified: 0,
                 phoneNumber: phone_number,
             });
 
