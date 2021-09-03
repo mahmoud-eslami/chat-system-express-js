@@ -24,6 +24,7 @@ exports.getEntity = async(req, res) => {
                     error: false,
                     message: {
                         userId: temp_user.userId,
+                        type: "U",
                         entityId: temp_entity.entityId,
                         name: temp_user.name,
                         phoneNumber: temp_user.phoneNumber,
@@ -41,6 +42,7 @@ exports.getEntity = async(req, res) => {
                     error: false,
                     message: {
                         entityId: temp_entity.entityId,
+                        type: "G",
                         groupId: temp_gp.groupId,
                         name: temp_gp.name,
                         description: temp_gp.description,
@@ -56,6 +58,7 @@ exports.getEntity = async(req, res) => {
                     error: false,
                     message: {
                         entityId: temp_entity.entityId,
+                        type: "C",
                         channelId: temp_channel.channelId,
                         name: temp_channel.name,
                         description: temp_channel.description,
