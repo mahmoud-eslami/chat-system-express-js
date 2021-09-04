@@ -52,7 +52,7 @@ exports.getLoginVerifyCode = async(req, res) => {
             });
 
             const mailOptions = {
-                from: "Chat Service",
+                from: config.supportEmail,
                 to: user.email,
                 subject: "Verification Code",
                 text: "Code is : " + generatedCode,
