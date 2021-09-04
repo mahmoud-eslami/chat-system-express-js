@@ -18,6 +18,13 @@ exports.getLoginVerifyCode = async(req, res) => {
 
         let user = await User.findOne({ where: { username: username } });
 
+        if (!user) {
+            res.status(404).json({
+                error: true,
+                message: "user not found!",
+            });
+        }
+
         // generate code
         var generatedCode = Math.floor(Math.random() * 10000) + 90000;
 
@@ -57,11 +64,11 @@ exports.getLoginVerifyCode = async(req, res) => {
                     console.log(info);
                 });
             } else if (verification_mode === "phone") {
-                // await twilio.messages.create({
-                //     body: "Verification code : " + generatedCode,
-                //     from: config.supportNumber,
-                //     to: user.phoneNumber,
-                // });
+                await twilio.messages.create({
+                    body: "Verification code : " + generatedCode,
+                    from: config.supportNumber,
+                    to: user.phoneNumber,
+                });
             }
 
             res.status(200).json({

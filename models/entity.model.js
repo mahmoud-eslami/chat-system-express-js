@@ -58,7 +58,7 @@ const User = sequelize.define(
             type: Sequelize.STRING,
             allowNull: false,
             validate: {
-                len: { args: [11, 11], msg: "Phone Number is invalid" },
+                len: { args: [13, 13], msg: "Phone Number is invalid" },
                 isInt: { args: true, msg: "You must enter Phone Number" },
             },
         },
