@@ -4,9 +4,7 @@ const Op = Sequelize.Op;
 const jwt = require("jsonwebtoken");
 const config = require("../config/config.json");
 const bcrypt = require("bcrypt");
-
-// todo : should use redis to store refresh token
-const refreshTokenList = [];
+const redisClient = require("../config/redis.config");
 
 exports.searchUsers = async(req, res) => {
     try {
@@ -186,8 +184,11 @@ exports.login = async(req, res) => {
                     message: "Wrong username or password!",
                 });
             } else {
+                let entity = await Entity.findOne({ where: { uid: temp_user.userId } });
+
                 const token = jwt.sign({
                         userId: temp_user.userId,
+                        eid: entity.entityId,
                         username: temp_user.username,
                     },
                     config.secret, {
@@ -196,15 +197,18 @@ exports.login = async(req, res) => {
                 );
                 const refreshToken = jwt.sign({
                         userId: temp_user.userId,
+                        eid: entity.entityId,
                         username: temp_user.username,
                     },
                     config.secret, {
                         expiresIn: config.refreshTokenLife,
                     }
                 );
-                // add refresh token to list
-                // todo : should use redis to store refresh token
-                refreshTokenList.push(refreshToken);
+                // add refresh token to redis
+
+                redisClient.set(temp_user.userId, refreshToken, function(err, reply) {
+                    console.log(reply); // OK
+                });
 
                 res.status(200).json({
                     error: false,
@@ -226,19 +230,49 @@ exports.login = async(req, res) => {
 
 exports.refreshToken = (req, res) => {
     try {
-        const { token, refreshToken } = req.body;
+        const { refreshToken } = req.body;
 
-        if (refreshTokenList.includes(refreshToken)) {
-            res.status(200).json({
-                error: false,
-                message: "Ok",
-            });
-        } else {
-            res.status(404).json({
-                error: true,
-                message: "token is invalid !",
-            });
-        }
+        let payload = jwt.decode(refreshToken);
+
+        let uid = payload["userId"];
+        let eid = payload["eid"];
+        let username = payload["username"];
+
+        redisClient.get(uid, function(err, reply) {
+            if (reply === refreshToken) {
+                const token = jwt.sign({
+                        userId: uid,
+                        eid: eid,
+                        username: username,
+                    },
+                    config.secret, {
+                        expiresIn: config.tokenLife,
+                    }
+                );
+                const refToken = jwt.sign({
+                        userId: uid,
+                        eid: eid,
+                        username: username,
+                    },
+                    config.secret, {
+                        expiresIn: config.refreshTokenLife,
+                    }
+                );
+
+                res.status(200).json({
+                    error: false,
+                    message: {
+                        token: token,
+                        refreshToken: refToken,
+                    },
+                });
+            } else {
+                res.status(404).json({
+                    error: true,
+                    message: "token is invalid !",
+                });
+            }
+        });
     } catch (e) {
         console.log(e);
         res.status(500).json({
