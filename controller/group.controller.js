@@ -147,8 +147,12 @@ exports.deleteGroup = async(req, res) => {
             },
         });
 
-        if (user_membership !== null && temp_group !== null) {
-            await group_entity.drstroy();
+        if (
+            user_membership !== null &&
+            temp_group !== null &&
+            group_entity !== null
+        ) {
+            await group_entity.destroy();
 
             await temp_group.destroy();
 

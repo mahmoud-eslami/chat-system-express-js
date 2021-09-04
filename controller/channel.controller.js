@@ -424,6 +424,13 @@ exports.removeMemberFromChannel = async(req, res) => {
             },
         });
 
+        if (!target_user_membership) {
+            res.status(404).json({
+                error: true,
+                message: "User Not found!",
+            });
+        }
+
         if (current_user_membership) {
             await target_user_membership.destroy();
             res.status(200).json({
