@@ -432,12 +432,39 @@ exports.removeMemberFromGroup = async(req, res) => {
         let current_user_entity = await Entity.findOne({
             where: { uid: currentUserId },
         });
+
         let target_user_entity = await Entity.findOne({
             where: { uid: targetUserId },
         });
         let group_entity = await Entity.findOne({
             where: { gid: groupId },
         });
+
+        if (targetUserId === currentUserId) {
+            res.status(403).json({
+                error: true,
+                message: "target id and user id can't be same",
+            });
+        }
+
+        if (!current_user_entity) {
+            res.status(404).json({
+                error: true,
+                message: "current user not found!",
+            });
+        }
+        if (!target_user_entity) {
+            res.status(403).json({
+                error: true,
+                message: "target user not found!",
+            });
+        }
+        if (!group_entity) {
+            res.status(403).json({
+                error: true,
+                message: "gp not found!",
+            });
+        }
 
         let current_user_membership = await Membership.findOne({
             Role: "A",
@@ -459,7 +486,7 @@ exports.removeMemberFromGroup = async(req, res) => {
             });
         } else {
             res.status(403).json({
-                error: false,
+                error: true,
                 message: "You can't remove a user!",
             });
         }
