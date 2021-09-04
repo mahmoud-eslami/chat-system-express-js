@@ -173,11 +173,9 @@ wss.on("connection", (connection, request) => {
                         users.push(connection.userId);
                         users.push(receiver_entity.uid);
                     } else if (receiver_entity.type === "C") {
-                        users.push(connection.userId);
-
                         let memberships = await Membership.findAll({
                             where: {
-                                id: membership_id,
+                                eid2: receiver_entity.entityId,
                             },
                         });
 
@@ -192,11 +190,9 @@ wss.on("connection", (connection, request) => {
                             users.push(temp_entity.uid);
                         }
                     } else if (receiver_entity.type === "G") {
-                        users.push(connection.userId);
-
                         let memberships = await Membership.findAll({
                             where: {
-                                id: membership_id,
+                                eid2: receiver_entity.entityId,
                             },
                         });
 
@@ -264,61 +260,67 @@ wss.on("connection", (connection, request) => {
                         },
                     });
 
-                    let receiver_entity = await Entity.findOne({
-                        where: {
-                            entityId: message_instance.eid_receiver,
-                        },
+                    let user_entity = await Entity.findOne({
+                        where: { uid: connection.userId },
                     });
 
-                    let entity_subscriber = [];
-
-                    if (receiver_entity.type == "C") {
-                        // here we should get all channel member and send message to each one
-
-                        let temp_memberships = await Membership.findAll({
+                    if (user_entity.entityId == message_instance.eid_sender) {
+                        let receiver_entity = await Entity.findOne({
                             where: {
-                                eid2: receiver_entity.entityId,
+                                entityId: message_instance.eid_receiver,
                             },
                         });
 
-                        for (const item of temp_memberships) {
-                            let temp_entity = await Entity.findOne({
-                                where: { entityId: item.eid1 },
+                        let entity_subscriber = [];
+
+                        if (receiver_entity.type == "C") {
+                            // here we should get all channel member and send message to each one
+
+                            let temp_memberships = await Membership.findAll({
+                                where: {
+                                    eid2: receiver_entity.entityId,
+                                },
                             });
 
-                            entity_subscriber.push(temp_entity.uid);
-                        }
-                    } else if (receiver_entity.type == "G") {
-                        // here we should get all group member and send message to each one
+                            for (const item of temp_memberships) {
+                                let temp_entity = await Entity.findOne({
+                                    where: { entityId: item.eid1 },
+                                });
 
-                        let temp_memberships = await Membership.findAll({
-                            where: {
-                                eid2: receiver_entity.entityId,
-                            },
-                        });
+                                entity_subscriber.push(temp_entity.uid);
+                            }
+                        } else if (receiver_entity.type == "G") {
+                            // here we should get all group member and send message to each one
 
-                        for (const item of temp_memberships) {
-                            let temp_entity = await Entity.findOne({
-                                where: { entityId: item.eid1 },
+                            let temp_memberships = await Membership.findAll({
+                                where: {
+                                    eid2: receiver_entity.entityId,
+                                },
                             });
 
-                            entity_subscriber.push(temp_entity.uid);
-                        }
-                    } else if (receiver_entity.type == "U") {
-                        // here we should get user and send message
+                            for (const item of temp_memberships) {
+                                let temp_entity = await Entity.findOne({
+                                    where: { entityId: item.eid1 },
+                                });
 
-                        entity_subscriber.push(receiver_entity.uid);
+                                entity_subscriber.push(temp_entity.uid);
+                            }
+                        } else if (receiver_entity.type == "U") {
+                            // here we should get user and send message
+
+                            entity_subscriber.push(receiver_entity.uid);
+                        }
+
+                        await message_instance.destroy();
+
+                        sendForSpecificUsers(
+                            entity_subscriber,
+                            JSON.stringify({
+                                key: jsonMessage.key,
+                                message: mId,
+                            })
+                        );
                     }
-
-                    await message_instance.destroy();
-
-                    sendForSpecificUsers(
-                        entity_subscriber,
-                        JSON.stringify({
-                            key: jsonMessage.key,
-                            message: mId,
-                        })
-                    );
 
                     break;
                 }
