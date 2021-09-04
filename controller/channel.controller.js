@@ -257,7 +257,9 @@ exports.updateChannelInfo = async(req, res) => {
         const { new_name, new_description, channelId } = req.body;
 
         let temp_channel = await Channel.findOne({
-            channelId: channelId,
+            where: {
+                channelId: channelId,
+            },
         });
 
         if (new_name !== undefined && new_description === undefined) {

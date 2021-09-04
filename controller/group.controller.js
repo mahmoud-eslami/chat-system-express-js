@@ -192,6 +192,13 @@ exports.joinGroup = async(req, res) => {
             },
         });
 
+        if (!user_entity) {
+            res.status(404).json({ error: true, message: "User not found!" });
+        }
+        if (!group_entity) {
+            res.status(404).json({ error: true, message: "Group not found!" });
+        }
+
         let old_membership = await Membership.findOne({
             where: {
                 Role: "U",
@@ -202,25 +209,18 @@ exports.joinGroup = async(req, res) => {
 
         if (old_membership) {
             res.status(403).json({ error: true, message: "User joined before!" });
-        }
+        } else {
+            await Membership.create({
+                Role: "U",
+                LastVisitDate: Date.now(),
+                eid1: user_entity.entityId,
+                eid2: group_entity.entityId,
+            });
 
-        if (!user_entity) {
-            res.status(404).json({ error: true, message: "User not found!" });
+            res
+                .status(200)
+                .json({ error: false, message: "user joined group successfull!" });
         }
-        if (!group_entity) {
-            res.status(404).json({ error: true, message: "Group not found!" });
-        }
-
-        await Membership.create({
-            Role: "U",
-            LastVisitDate: Date.now(),
-            eid1: user_entity.entityId,
-            eid2: group_entity.entityId,
-        });
-
-        res
-            .status(200)
-            .json({ error: false, message: "user joined group successfull!" });
     } catch (e) {
         console.log(e);
         res.status(500).json({ error: true, message: e.toString() });
@@ -232,12 +232,23 @@ exports.leftGroup = async(req, res) => {
         const { userId, groupId } = req.body;
 
         let user_entity = await Entity.findOne({
-            uid: userId,
+            where: {
+                uid: userId,
+            },
         });
 
         let group_entity = await Entity.findOne({
-            gid: groupId,
+            where: {
+                gid: groupId,
+            },
         });
+
+        if (!user_entity) {
+            res.status(404).json({ error: true, message: "user not exist!" });
+        }
+        if (!group_entity) {
+            res.status(404).json({ error: true, message: "gp not exist!" });
+        }
 
         await Membership.destroy({
             where: {
@@ -260,8 +271,17 @@ exports.updateGroupInfo = async(req, res) => {
         const { new_name, new_description, groupId } = req.body;
 
         let temp_group = await Group.findOne({
-            groupId: groupId,
+            where: {
+                groupId: groupId,
+            },
         });
+
+        if (!temp_group) {
+            res.status(403).json({
+                error: true,
+                message: "group not exist!",
+            });
+        }
 
         if (new_name !== undefined && new_description === undefined) {
             await temp_group.update({ name: new_name });
@@ -274,13 +294,13 @@ exports.updateGroupInfo = async(req, res) => {
             });
         } else {
             res.status(403).json({
-                error: false,
+                error: true,
                 message: "please enter new name or description to update group!",
             });
         }
         res.status(200).json({
             error: false,
-            message: "Channel info updated!",
+            message: "Group info updated!",
         });
     } catch (e) {
         console.log(e);
@@ -373,6 +393,7 @@ exports.getGroupMember = async(req, res) => {
                 createdAt: element.createdAt,
                 user: {
                     userId: user_info.userId,
+                    eid: element_entity.entityId,
                     name: user_info.name,
                     phoneNumber: user_info.phoneNumber,
                     email: user_info.email,
