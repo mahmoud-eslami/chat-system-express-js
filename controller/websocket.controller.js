@@ -7,10 +7,6 @@ const config = require("../config/config.json");
 
 const wss = new WebSocket.Server({ port: config.webSocketPort });
 
-// todo
-/*in debug mode we store data
- in array but we should use
-  redis in production */
 CLIENT = [];
 wss.on("connection", (connection, request) => {
     // add every new connection to array
@@ -324,7 +320,7 @@ wss.on("connection", (connection, request) => {
 
                     break;
                 }
-            case "replayMessage":
+            case "replyMessage":
                 {
                     const mId = jsonMessage.mId;
                     const mContent = jsonMessage.mContent;
