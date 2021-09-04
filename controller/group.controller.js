@@ -175,15 +175,41 @@ exports.deleteGroup = async(req, res) => {
 
 exports.joinGroup = async(req, res) => {
     try {
-        const { userId, groupId } = req.body;
+        const groupId = req.body.groupId;
+        const userId = req.body.userId;
 
         let user_entity = await Entity.findOne({
-            uid: userId,
+            where: {
+                uid: userId,
+                type: "U",
+            },
         });
 
         let group_entity = await Entity.findOne({
-            gid: groupId,
+            where: {
+                gid: groupId,
+                type: "G",
+            },
         });
+
+        let old_membership = await Membership.findOne({
+            where: {
+                Role: "U",
+                eid1: user_entity.entityId,
+                eid2: group_entity.entityId,
+            },
+        });
+
+        if (old_membership) {
+            res.status(403).json({ error: true, message: "User joined before!" });
+        }
+
+        if (!user_entity) {
+            res.status(404).json({ error: true, message: "User not found!" });
+        }
+        if (!group_entity) {
+            res.status(404).json({ error: true, message: "Group not found!" });
+        }
 
         await Membership.create({
             Role: "U",
