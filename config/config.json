@@ -7,5 +7,10 @@
     "webSocketPort": 8080,
     "tokenLife": 900,
     "refreshTokenLife": 86400,
-    "saltRound": 10
+    "saltRound": 10,
+    "supportEmail": "schoolmahmoudok@gmail.com",
+    "supportEmailPassword": "mahmoodok1213",
+    "supportNumber": "+18572170614",
+    "supportNumberSid": "AC04a9f1db49e7498e5769bdfd5243d97b",
+    "supportNumberAuthToken": "36b11f5cadbad61a25ed5dbd5a8818bb"
 }

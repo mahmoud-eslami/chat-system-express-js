@@ -8,4 +8,5 @@ module.exports = (app) => {
     app.get("/get/entity", auth.getEntity);
     app.get("/get/username", auth.getUsername);
     app.get("/search/users", auth.searchUsers);
+    app.get("/get/loginVerifyCode", auth.getLoginVerifyCode);
 };
