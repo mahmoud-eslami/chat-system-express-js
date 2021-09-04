@@ -2,6 +2,9 @@
     "secret": "test_secret",
     "refreshTokenSecret": "test_refresh_secret",
     "port": 5000,
+    "host": "127.0.0.1",
+    "redisPort": "6379",
+    "webSocketPort": 8080,
     "tokenLife": 900,
     "refreshTokenLife": 86400,
     "saltRound": 10

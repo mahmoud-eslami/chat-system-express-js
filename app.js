@@ -11,12 +11,7 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const config = require("./config/config.json");
 const webSocket = require("./controller/websocket.controller");
-var request = require("request");
-const jsdom = require("jsdom");
-const Screenshot = require("url-to-screenshot");
-const fs = require("fs");
-const puppeteer = require("puppeteer");
-
+const redis = require("redis");
 // adding Helmet to enhance your API's security
 app.use(helmet());
 // using bodyParser to parse JSON bodies into JS objects
@@ -36,6 +31,11 @@ require("./routes/channel.routes")(app);
 require("./routes/group.routes")(app);
 require("./routes/membership.routes")(app);
 app.listen(config.port, () => console.log("server start listening on 5000"));
+const redisClient = redis.createClient(config.redisPort, config.host);
+
+redisClient.on("connect", function() {
+    console.log("redis connected !");
+});
 
 async function syncDatabase() {
     try {
@@ -54,4 +54,4 @@ async function checkDb() {
     }
 }
 
-module.exports = app;
+module.exports = { app, redisClient };

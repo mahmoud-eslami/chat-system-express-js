@@ -3,8 +3,9 @@ var parse = require("url-parse");
 const { Entity, User } = require("../models/entity.model");
 const Membership = require("../models/membership.model");
 const { Message, seenMessage } = require("../models/message.model");
+const config = require("../config/config.json");
 
-const wss = new WebSocket.Server({ port: 8080 });
+const wss = new WebSocket.Server({ port: config.webSocketPort });
 
 // todo
 /*in debug mode we store data
