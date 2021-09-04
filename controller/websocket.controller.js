@@ -220,18 +220,20 @@ wss.on("connection", (connection, request) => {
                 }
             case "seenMessage":
                 {
-                    var mId = jsonMessage.mId;
+                    const mId = jsonMessage.mId;
 
                     let entity = await Entity.findOne({
                         where: { uid: connection.userId },
                     });
 
                     let seen_instance = await seenMessage.findOne({
-                        mid: mId,
-                        eid: entity.entityId,
+                        where: {
+                            mid: mId,
+                            eid: entity.entityId,
+                        },
                     });
 
-                    if (seen_instance) {} else {
+                    if (!seen_instance) {
                         await seenMessage.create({
                             mid: mId,
                             eid: entity.entityId,
