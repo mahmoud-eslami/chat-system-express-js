@@ -2,6 +2,15 @@ const { Entity, Channel, User } = require("../models/entity.model");
 const Membership = require("../models/membership.model");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
+const jwt = require("jsonwebtoken");
+
+function getUserId(token) {
+    let payload = jwt.decode(token);
+
+    let uid = payload["userId"];
+
+    return uid;
+}
 
 exports.unpinMessage = async(req, res) => {
     try {
@@ -88,7 +97,10 @@ exports.seachChannel = async(req, res) => {
 
 exports.createChannel = async(req, res) => {
     try {
-        const { name, description, userId } = req.body;
+        const { name, description } = req.body;
+        const token = req.headers["x-access-token"];
+        const userId = getUserId(token);
+        console.log(userId);
 
         const new_channel = await Channel.create({
             name: name,
@@ -130,7 +142,10 @@ exports.createChannel = async(req, res) => {
 
 exports.deleteChannel = async(req, res) => {
     try {
-        const { channelId, userId } = req.body;
+        const { channelId } = req.body;
+        const token = req.headers["x-access-token"];
+        const userId = getUserId(token);
+        console.log(userId);
 
         let user_entity = await Entity.findOne({
             where: {
@@ -180,7 +195,10 @@ exports.deleteChannel = async(req, res) => {
 
 exports.joinChannel = async(req, res) => {
     try {
-        const { userId, channelId } = req.body;
+        const { channelId } = req.body;
+        const token = req.headers["x-access-token"];
+        const userId = getUserId(token);
+        console.log(userId);
         // get user entity
         let temp_user = await Entity.findOne({
             where: {
@@ -195,13 +213,23 @@ exports.joinChannel = async(req, res) => {
             },
         });
 
-        // create member ship
-        await Membership.create({
-            Role: "U",
-            LastVisitDate: Date.now(),
-            eid1: temp_user.entityId,
-            eid2: temp_channel.entityId,
+        let old_membership = await Membership.findOne({
+            where: {
+                Role: "U",
+                eid1: temp_user.entityId,
+                eid2: temp_channel.entityId,
+            },
         });
+
+        if (!old_membership) {
+            // create member ship
+            await Membership.create({
+                Role: "U",
+                LastVisitDate: Date.now(),
+                eid1: temp_user.entityId,
+                eid2: temp_channel.entityId,
+            });
+        }
 
         res
             .status(200)
@@ -217,7 +245,9 @@ exports.joinChannel = async(req, res) => {
 
 exports.leftChannel = async(req, res) => {
     try {
-        const { userId, channelId } = req.body;
+        const { channelId } = req.body;
+        const token = req.headers["x-access-token"];
+        const userId = getUserId(token);
 
         // get user entity
         let temp_user = await Entity.findOne({
@@ -255,6 +285,9 @@ exports.leftChannel = async(req, res) => {
 exports.updateChannelInfo = async(req, res) => {
     try {
         const { new_name, new_description, channelId } = req.body;
+        const token = req.headers["x-access-token"];
+        const userId = getUserId(token);
+        console.log(userId);
 
         let temp_channel = await Channel.findOne({
             where: {
@@ -262,25 +295,52 @@ exports.updateChannelInfo = async(req, res) => {
             },
         });
 
-        if (new_name !== undefined && new_description === undefined) {
-            await temp_channel.update({ name: new_name });
-        } else if (new_name === undefined && new_description !== undefined) {
-            await temp_channel.update({ description: new_description });
-        } else if (new_name !== undefined && new_description !== undefined) {
-            await temp_channel.update({
-                description: new_description,
-                name: new_name,
-            });
-        } else {
+        let user_entity = await Entity.findOne({
+            where: {
+                uid: userId,
+            },
+        });
+
+        let channel_entity = await Entity.findOne({
+            where: {
+                cid: userId,
+            },
+        });
+
+        let membership = await Membership.findOne({
+            where: {
+                eid1: user_entity.entityId,
+                eid2: channel_entity.entityId,
+                Role: "A",
+            },
+        });
+
+        if (membership) {
             res.status(403).json({
                 error: false,
-                message: "please enter new name or description to update channel!",
+                message: "Just admin can change on channel info",
+            });
+        } else {
+            if (new_name !== undefined && new_description === undefined) {
+                await temp_channel.update({ name: new_name });
+            } else if (new_name === undefined && new_description !== undefined) {
+                await temp_channel.update({ description: new_description });
+            } else if (new_name !== undefined && new_description !== undefined) {
+                await temp_channel.update({
+                    description: new_description,
+                    name: new_name,
+                });
+            } else {
+                res.status(403).json({
+                    error: false,
+                    message: "please enter new name or description to update channel!",
+                });
+            }
+            res.status(200).json({
+                error: false,
+                message: "Channel info updated!",
             });
         }
-        res.status(200).json({
-            error: false,
-            message: "Channel info updated!",
-        });
     } catch (e) {
         console.log(e);
         res.status(500).json({
@@ -347,50 +407,73 @@ exports.addAdminForChannel = async(req, res) => {
 
 exports.getChannelMember = async(req, res) => {
     try {
+        const channelId = req.body.channelId;
+        const token = req.headers["x-access-token"];
+        const userId = getUserId(token);
         let all_data = [];
 
-        const channelId = req.body.channelId;
-
-        let gp_entity = await Entity.findOne({ where: { cid: channelId } });
-
-        let channelMembers = await Membership.findAll({
-            where: { eid2: gp_entity.entityId },
-        });
-
-        for (const element of channelMembers) {
-            let element_entity = await Entity.findOne({
-                where: {
-                    entityId: element.eid1,
-                },
+        let channel_entity = await Entity.findOne({ where: { cid: channelId } });
+        if (!channel_entity) {
+            res.status(404).json({
+                error: true,
+                message: "channel not found!",
             });
-            let user_info = await User.findOne({
-                where: {
-                    userId: element_entity.uid,
-                },
-            });
-            const data = {
-                id: element.id,
-                Role: element.Role,
-                LastVisitDate: element.LastVisitDate,
-                createdAt: element.createdAt,
-                user: {
-                    userId: user_info.userId,
-                    eid: element_entity.entityId,
-                    name: user_info.name,
-                    phoneNumber: user_info.phoneNumber,
-                    email: user_info.email,
-                    username: user_info.username,
-                    createdAt: user_info.createdAt,
-                },
-            };
-
-            all_data.push(data);
         }
 
-        res.status(200).json({
-            error: false,
-            message: all_data,
+        let user_entity = await Entity.findOne({ where: { uid: userId } });
+        let membership = await Membership.findOne({
+            where: {
+                eid1: user_entity.entityId,
+                eid2: channel_entity.entityId,
+                Role: "A",
+            },
         });
+
+        if (membership) {
+            res.status(403).json({
+                error: true,
+                message: "just admin can see channel member!",
+            });
+        } else {
+            let channelMembers = await Membership.findAll({
+                where: { eid2: channel_entity.entityId },
+            });
+
+            for (const element of channelMembers) {
+                let element_entity = await Entity.findOne({
+                    where: {
+                        entityId: element.eid1,
+                    },
+                });
+                let user_info = await User.findOne({
+                    where: {
+                        userId: element_entity.uid,
+                    },
+                });
+                const data = {
+                    id: element.id,
+                    Role: element.Role,
+                    LastVisitDate: element.LastVisitDate,
+                    createdAt: element.createdAt,
+                    user: {
+                        userId: user_info.userId,
+                        eid: element_entity.entityId,
+                        name: user_info.name,
+                        phoneNumber: user_info.phoneNumber,
+                        email: user_info.email,
+                        username: user_info.username,
+                        createdAt: user_info.createdAt,
+                    },
+                };
+
+                all_data.push(data);
+            }
+
+            res.status(200).json({
+                error: false,
+                message: all_data,
+            });
+        }
     } catch (e) {
         console.log(e);
         res.status(500).json({
@@ -402,7 +485,9 @@ exports.getChannelMember = async(req, res) => {
 
 exports.removeMemberFromChannel = async(req, res) => {
     try {
-        const { currentUserId, targetUserId, channelId } = req.body;
+        const { targetUserId, channelId } = req.body;
+        const token = req.headers["x-access-token"];
+        const currentUserId = getUserId(token);
 
         let current_user_entity = await Entity.findOne({
             where: { uid: currentUserId },
