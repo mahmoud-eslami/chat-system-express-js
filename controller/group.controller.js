@@ -371,44 +371,51 @@ exports.getGroupMember = async(req, res) => {
 
         let gp_entity = await Entity.findOne({ where: { gid: groupId } });
 
-        let groupMembers = await Membership.findAll({
-            where: { eid2: gp_entity.entityId },
-        });
-
-        for (const element of groupMembers) {
-            let element_entity = await Entity.findOne({
-                where: {
-                    entityId: element.eid1,
-                },
+        if (!gp_entity) {
+            res.status(404).json({
+                error: true,
+                message: "gp not exist!",
             });
-            let user_info = await User.findOne({
-                where: {
-                    userId: element_entity.uid,
-                },
+        } else {
+            let groupMembers = await Membership.findAll({
+                where: { eid2: gp_entity.entityId },
             });
-            const data = {
-                id: element.id,
-                Role: element.Role,
-                LastVisitDate: element.LastVisitDate,
-                createdAt: element.createdAt,
-                user: {
-                    userId: user_info.userId,
-                    eid: element_entity.entityId,
-                    name: user_info.name,
-                    phoneNumber: user_info.phoneNumber,
-                    email: user_info.email,
-                    username: user_info.username,
-                    createdAt: user_info.createdAt,
-                },
-            };
 
-            all_data.push(data);
+            for (const element of groupMembers) {
+                let element_entity = await Entity.findOne({
+                    where: {
+                        entityId: element.eid1,
+                    },
+                });
+                let user_info = await User.findOne({
+                    where: {
+                        userId: element_entity.uid,
+                    },
+                });
+                const data = {
+                    id: element.id,
+                    Role: element.Role,
+                    LastVisitDate: element.LastVisitDate,
+                    createdAt: element.createdAt,
+                    user: {
+                        userId: user_info.userId,
+                        eid: element_entity.entityId,
+                        name: user_info.name,
+                        phoneNumber: user_info.phoneNumber,
+                        email: user_info.email,
+                        username: user_info.username,
+                        createdAt: user_info.createdAt,
+                    },
+                };
+
+                all_data.push(data);
+            }
+
+            res.status(200).json({
+                error: false,
+                message: all_data,
+            });
         }
-
-        res.status(200).json({
-            error: false,
-            message: all_data,
-        });
     } catch (e) {
         console.log(e);
         res.status(500).json({
