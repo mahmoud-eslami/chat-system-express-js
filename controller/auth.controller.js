@@ -26,7 +26,12 @@ exports.getLoginVerifyCode = async(req, res) => {
             user.userId + user.username,
             generatedCode,
             function(err, reply) {
-                console.log(reply + "generate code saved in redis!"); // OK
+                redisClient.expire(user.userId + user.username, 120, function(e, r) {
+                    console.log(e);
+                    console.log(r + " expire time added");
+                });
+                console.log(err);
+                console.log(reply + " generate code saved in redis!"); // OK
             }
         );
 
@@ -52,11 +57,11 @@ exports.getLoginVerifyCode = async(req, res) => {
                     console.log(info);
                 });
             } else if (verification_mode === "phone") {
-                await twilio.messages.create({
-                    body: "Verification code : " + generatedCode,
-                    from: config.supportNumber,
-                    to: user.phoneNumber,
-                });
+                // await twilio.messages.create({
+                //     body: "Verification code : " + generatedCode,
+                //     from: config.supportNumber,
+                //     to: user.phoneNumber,
+                // });
             }
 
             res.status(200).json({
