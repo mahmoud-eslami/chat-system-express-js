@@ -114,7 +114,7 @@ wss.on("connection", (connection, request) => {
 
                     for (const message of messages) {
                         let entity_sender = await Entity.findOne({
-                            where: { uid: message.eid_sender },
+                            where: { entityId: message.eid_sender },
                         });
 
                         let sender_user = await User.findOne({
@@ -333,7 +333,7 @@ wss.on("connection", (connection, request) => {
 
                     let new_message = await Message.create({
                         viewCount: 0,
-                        Text: mContent,
+                        Text: messageStruct(mContent, null),
                         selfDelete: 0,
                         eid_sender: eid_sender,
                         eid_receiver: eid_receiver,
