@@ -322,7 +322,7 @@ exports.addAdminForChannel = async(req, res) => {
             },
         });
 
-        if (current_user_membership) {
+        if (target_user_membership) {
             await target_user_membership.update({ Role: "A" });
             res.status(200).json({
                 error: false,
@@ -373,6 +373,7 @@ exports.getChannelMember = async(req, res) => {
                 createdAt: element.createdAt,
                 user: {
                     userId: user_info.userId,
+                    eid: element_entity.entityId,
                     name: user_info.name,
                     phoneNumber: user_info.phoneNumber,
                     email: user_info.email,

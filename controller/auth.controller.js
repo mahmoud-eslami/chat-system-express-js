@@ -187,7 +187,7 @@ exports.getEntity = async(req, res) => {
         } else {
             res.status(404).json({
                 error: true,
-                message: "User not found!",
+                message: "Entity not found!",
             });
         }
     } catch (e) {
@@ -355,6 +355,11 @@ exports.refreshToken = (req, res) => {
                         expiresIn: config.refreshTokenLife,
                     }
                 );
+
+                // save new ref token in redis
+                redisClient.set(uid, refToken, function(err, reply) {
+                    console.log(reply); // OK
+                });
 
                 res.status(200).json({
                     error: false,
