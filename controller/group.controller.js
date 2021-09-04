@@ -2,6 +2,15 @@ const { Entity, Group, User } = require("../models/entity.model");
 const Membership = require("../models/membership.model");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
+const jwt = require("jsonwebtoken");
+
+function getUserId(token) {
+    let payload = jwt.decode(token);
+
+    let uid = payload["userId"];
+
+    return uid;
+}
 
 exports.unpinMessage = async(req, res) => {
     try {
@@ -88,7 +97,10 @@ exports.searchGroup = async(req, res) => {
 
 exports.createGroup = async(req, res) => {
     try {
-        const { name, description, userId } = req.body;
+        const { name, description } = req.body;
+        const token = req.headers["x-access-token"];
+        const userId = getUserId(token);
+        console.log(userId);
 
         const new_group = await Group.create({
             name: name,
@@ -124,7 +136,10 @@ exports.createGroup = async(req, res) => {
 
 exports.deleteGroup = async(req, res) => {
     try {
-        const { groupId, userId } = req.body;
+        const { groupId } = req.body;
+        const token = req.headers["x-access-token"];
+        const userId = getUserId(token);
+        console.log(userId);
 
         let user_entity = await Entity.findOne({
             where: {
@@ -176,7 +191,9 @@ exports.deleteGroup = async(req, res) => {
 exports.joinGroup = async(req, res) => {
     try {
         const groupId = req.body.groupId;
-        const userId = req.body.userId;
+        const token = req.headers["x-access-token"];
+        const userId = getUserId(token);
+        console.log(userId);
 
         let user_entity = await Entity.findOne({
             where: {
@@ -229,7 +246,10 @@ exports.joinGroup = async(req, res) => {
 
 exports.leftGroup = async(req, res) => {
     try {
-        const { userId, groupId } = req.body;
+        const groupId = req.body.groupId;
+        const token = req.headers["x-access-token"];
+        const userId = getUserId(token);
+        console.log(userId);
 
         let user_entity = await Entity.findOne({
             where: {
@@ -269,6 +289,9 @@ exports.leftGroup = async(req, res) => {
 exports.updateGroupInfo = async(req, res) => {
     try {
         const { new_name, new_description, groupId } = req.body;
+        const token = req.headers["x-access-token"];
+        const userId = getUserId(token);
+        console.log(userId);
 
         let temp_group = await Group.findOne({
             where: {
@@ -283,25 +306,45 @@ exports.updateGroupInfo = async(req, res) => {
             });
         }
 
-        if (new_name !== undefined && new_description === undefined) {
-            await temp_group.update({ name: new_name });
-        } else if (new_name === undefined && new_description !== undefined) {
-            await temp_group.update({ description: new_description });
-        } else if (new_name !== undefined && new_description !== undefined) {
-            await temp_group.update({
-                description: new_description,
-                name: new_name,
+        let gp_entity = await Entity.findOne({
+            where: { gid: groupId },
+        });
+        let user_entity = await Entity.findOne({ where: { uid: userId } });
+
+        let membership = await Membership.findOne({
+            where: {
+                eid1: user_entity.entityId,
+                eid2: gp_entity.entityId,
+                Role: "A",
+            },
+        });
+
+        if (membership) {
+            if (new_name !== undefined && new_description === undefined) {
+                await temp_group.update({ name: new_name });
+            } else if (new_name === undefined && new_description !== undefined) {
+                await temp_group.update({ description: new_description });
+            } else if (new_name !== undefined && new_description !== undefined) {
+                await temp_group.update({
+                    description: new_description,
+                    name: new_name,
+                });
+            } else {
+                res.status(403).json({
+                    error: true,
+                    message: "please enter new name or description to update group!",
+                });
+            }
+            res.status(200).json({
+                error: false,
+                message: "Group info updated!",
             });
         } else {
             res.status(403).json({
-                error: true,
-                message: "please enter new name or description to update group!",
+                error: false,
+                message: "Just admin can change on gp info",
             });
         }
-        res.status(200).json({
-            error: false,
-            message: "Group info updated!",
-        });
     } catch (e) {
         console.log(e);
         res.status(500).json({ error: true, message: e.toString() });
@@ -427,7 +470,9 @@ exports.getGroupMember = async(req, res) => {
 
 exports.removeMemberFromGroup = async(req, res) => {
     try {
-        const { currentUserId, targetUserId, groupId } = req.body;
+        const { targetUserId, groupId } = req.body;
+        const token = req.headers["x-access-token"];
+        const currentUserId = getUserId(token);
 
         let current_user_entity = await Entity.findOne({
             where: { uid: currentUserId },

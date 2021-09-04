@@ -316,11 +316,6 @@ exports.updateChannelInfo = async(req, res) => {
         });
 
         if (membership) {
-            res.status(403).json({
-                error: false,
-                message: "Just admin can change on channel info",
-            });
-        } else {
             if (new_name !== undefined && new_description === undefined) {
                 await temp_channel.update({ name: new_name });
             } else if (new_name === undefined && new_description !== undefined) {
@@ -339,6 +334,11 @@ exports.updateChannelInfo = async(req, res) => {
             res.status(200).json({
                 error: false,
                 message: "Channel info updated!",
+            });
+        } else {
+            res.status(403).json({
+                error: false,
+                message: "Just admin can change on channel info",
             });
         }
     } catch (e) {
