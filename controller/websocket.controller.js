@@ -55,7 +55,7 @@ wss.on("connection", (connection, request) => {
 
                         let memberships = await Membership.findAll({
                             where: {
-                                id: membership_id,
+                                eid2: receiver_entity.entityId,
                             },
                         });
 
@@ -74,7 +74,7 @@ wss.on("connection", (connection, request) => {
 
                         let memberships = await Membership.findAll({
                             where: {
-                                id: membership_id,
+                                eid2: receiver_entity.entityId,
                             },
                         });
 
