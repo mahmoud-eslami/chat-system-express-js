@@ -93,6 +93,75 @@ wss.on("connection", (connection, request) => {
 
                     break;
                 }
+            case "replyMessage":
+                {
+                    const mId = jsonMessage.mId;
+                    const mContent = jsonMessage.mContent;
+                    const eid_sender = jsonMessage.eid_sender;
+                    const eid_receiver = jsonMessage.eid_receiver;
+                    const membershipId = jsonMessage.membershipId;
+                    var users = [];
+
+                    let new_message = await Message.create({
+                        viewCount: 0,
+                        Text: messageStruct(mContent, null),
+                        selfDelete: 0,
+                        eid_sender: eid_sender,
+                        eid_receiver: eid_receiver,
+                        replay_mid: mId,
+                        membershipId: membershipId,
+                    });
+
+                    let entity_receiver = await Entity.findOne({
+                        where: { entityId: eid_receiver },
+                    });
+
+                    if (entity_receiver.type === "U") {
+                        users.push(connection.userId);
+                        users.push(entity_receiver.uid);
+                    } else if (entity_receiver.type === "C") {
+                        let memberships = await Membership.findAll({
+                            where: {
+                                eid2: receiver_entity.entityId,
+                            },
+                        });
+
+                        // add uid of entities to users array
+                        for (const item of memberships) {
+                            let temp_entity = await Entity.findOne({
+                                where: {
+                                    entityId: item.eid1,
+                                },
+                            });
+
+                            users.push(temp_entity.uid);
+                        }
+                    } else if (entity_receiver.type === "G") {
+                        let memberships = await Membership.findAll({
+                            where: {
+                                eid2: receiver_entity.entityId,
+                            },
+                        });
+
+                        // add uid of entities to users array
+                        for (const item of memberships) {
+                            let temp_entity = await Entity.findOne({
+                                where: {
+                                    entityId: item.eid1,
+                                },
+                            });
+
+                            users.push(temp_entity.uid);
+                        }
+                    }
+
+                    sendForSpecificUsers(
+                        users,
+                        JSON.stringify({ key: jsonMessage.key, message: new_message })
+                    );
+
+                    break;
+                }
             case "getMembershipMessage":
                 {
                     const membershipId = jsonMessage.membershipId;
@@ -320,41 +389,7 @@ wss.on("connection", (connection, request) => {
 
                     break;
                 }
-            case "replyMessage":
-                {
-                    const mId = jsonMessage.mId;
-                    const mContent = jsonMessage.mContent;
-                    const eid_sender = jsonMessage.eid_sender;
-                    const eid_receiver = jsonMessage.eid_receiver;
-                    const membershipId = jsonMessage.membershipId;
-                    var users = [];
 
-                    let new_message = await Message.create({
-                        viewCount: 0,
-                        Text: messageStruct(mContent, null),
-                        selfDelete: 0,
-                        eid_sender: eid_sender,
-                        eid_receiver: eid_receiver,
-                        replay_mid: mId,
-                        membershipId: membershipId,
-                    });
-
-                    let entity_receiver = await Entity.findOne({
-                        where: { entityId: eid_receiver },
-                    });
-
-                    if (entity_receiver.type === "U") {
-                        users.push(connection.userId);
-                        users.push(entity_receiver.uid);
-                    } else if (entity_receiver.type === "C") {} else if (entity_receiver.type === "G") {}
-
-                    sendForSpecificUsers(
-                        users,
-                        JSON.stringify({ key: jsonMessage.key, message: new_message })
-                    );
-
-                    break;
-                }
             case "selfDeleteMessage":
                 {
                     const mId = jsonMessage.mId;
