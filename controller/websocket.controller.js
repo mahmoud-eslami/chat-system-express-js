@@ -22,7 +22,6 @@ wss.on("connection", (connection, request) => {
                     const message_id = jsonMessage.message_id;
                     const eid_sender = jsonMessage.eid_sender;
                     const eid_receiver = jsonMessage.eid_receiver;
-                    const membership_id = jsonMessage.membership_id;
                     let users = [];
 
                     let message_instance = await Message.findOne({
@@ -44,7 +43,6 @@ wss.on("connection", (connection, request) => {
                         selfDelete: 0,
                         eid_sender: eid_sender,
                         eid_receiver: eid_receiver,
-                        membershipId: membership_id,
                     });
 
                     if (receiver_entity.type === "U") {
@@ -99,7 +97,6 @@ wss.on("connection", (connection, request) => {
                     const mContent = jsonMessage.mContent;
                     const eid_sender = jsonMessage.eid_sender;
                     const eid_receiver = jsonMessage.eid_receiver;
-                    const membershipId = jsonMessage.membershipId;
                     var users = [];
 
                     let new_message = await Message.create({
@@ -109,7 +106,6 @@ wss.on("connection", (connection, request) => {
                         eid_sender: eid_sender,
                         eid_receiver: eid_receiver,
                         replay_mid: mId,
-                        membershipId: membershipId,
                     });
 
                     let entity_receiver = await Entity.findOne({
@@ -164,42 +160,89 @@ wss.on("connection", (connection, request) => {
                 }
             case "getMembershipMessage":
                 {
-                    const membershipId = jsonMessage.membershipId;
+                    const receiver_id = jsonMessage.receiver_id;
                     const page = jsonMessage.page;
                     const pageSize = jsonMessage.pageSize;
                     let offset = page * pageSize;
                     let limit = pageSize;
 
                     let data = [];
-                    let messages = await Message.findAll({
-                        where: { membershipId: membershipId },
-                        offset: offset,
-                        limit: limit,
+
+                    let entity_receiver = await Entity.findOne({
+                        where: { entityId: receiver_id },
                     });
 
-                    for (const message of messages) {
-                        let entity_sender = await Entity.findOne({
-                            where: { entityId: message.eid_sender },
+                    if (entity_receiver.type === "U") {
+                        let messages = await Message.findAll({
+                            where: { eid_receiver: receiver_id },
+                            offset: offset,
+                            limit: limit,
                         });
 
-                        let sender_user = await User.findOne({
-                            where: { userId: entity_sender.uid },
+                        let messages_reverse = await Message.findAll({
+                            where: { eid_sender: receiver_id },
+                            offset: offset,
+                            limit: limit,
                         });
 
-                        data.push({
-                            messageId: message.messageId,
-                            viewCount: message.viewCount,
-                            Text: message.Text,
-                            createdAt: message.createdAt,
-                            eid_sender: message.eid_sender,
-                            eid_receiver: message.eid_receiver,
-                            replay_mid: message.replay_mid,
-                            membershipId: message.membershipId,
-                            senderInfo: {
-                                userId: sender_user.userId,
-                                name: sender_user.name,
-                            },
+                        // add all two list
+                        let all_messages = messages.concat(messages_reverse);
+
+                        for (const message of all_messages) {
+                            let entity_sender = await Entity.findOne({
+                                where: { entityId: message.eid_sender },
+                            });
+
+                            let sender_user = await User.findOne({
+                                where: { userId: entity_sender.uid },
+                            });
+
+                            data.push({
+                                messageId: message.messageId,
+                                viewCount: message.viewCount,
+                                Text: message.Text,
+                                createdAt: message.createdAt,
+                                eid_sender: message.eid_sender,
+                                eid_receiver: message.eid_receiver,
+                                replay_mid: message.replay_mid,
+                                membershipId: message.membershipId,
+                                senderInfo: {
+                                    userId: sender_user.userId,
+                                    name: sender_user.name,
+                                },
+                            });
+                        }
+                    } else {
+                        let messages = await Message.findAll({
+                            where: { eid_receiver: receiver_id },
+                            offset: offset,
+                            limit: limit,
                         });
+
+                        for (const message of messages) {
+                            let entity_sender = await Entity.findOne({
+                                where: { entityId: message.eid_sender },
+                            });
+
+                            let sender_user = await User.findOne({
+                                where: { userId: entity_sender.uid },
+                            });
+
+                            data.push({
+                                messageId: message.messageId,
+                                viewCount: message.viewCount,
+                                Text: message.Text,
+                                createdAt: message.createdAt,
+                                eid_sender: message.eid_sender,
+                                eid_receiver: message.eid_receiver,
+                                replay_mid: message.replay_mid,
+                                membershipId: message.membershipId,
+                                senderInfo: {
+                                    userId: sender_user.userId,
+                                    name: sender_user.name,
+                                },
+                            });
+                        }
                     }
 
                     connection.send(
@@ -231,7 +274,6 @@ wss.on("connection", (connection, request) => {
                         selfDelete: 0,
                         eid_sender: eid_sender,
                         eid_receiver: eid_receiver,
-                        membershipId: membership_id,
                     });
 
                     if (receiver_entity.type === "U") {

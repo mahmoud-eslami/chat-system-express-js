@@ -57,14 +57,6 @@ Message.belongsTo(Message, {
     foreignKey: { name: "replay_mid", allowNull: true },
 });
 
-Membership.hasMany(Message, {
-    foreignKey: { name: "membershipId", allowNull: false },
-});
-
-Message.belongsTo(Membership, {
-    foreignKey: { name: "membershipId", allowNull: false },
-});
-
 // seen message fk
 
 Message.hasMany(seenMessage, {

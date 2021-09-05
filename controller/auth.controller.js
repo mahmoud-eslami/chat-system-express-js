@@ -27,6 +27,7 @@ exports.getLoginVerifyCode = async(req, res) => {
 
         // generate code
         var generatedCode = Math.floor(Math.random() * 10000) + 90000;
+        console.log(generatedCode);
 
         // add generated code to redis
         redisClient.set(
