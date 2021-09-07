@@ -5,15 +5,41 @@ const Membership = require("../models/membership.model");
 const { Message, seenMessage } = require("../models/message.model");
 const config = require("../config/config.json");
 const Sequelize = require("sequelize");
+const jwt = require("jsonwebtoken");
 const Op = Sequelize.Op;
 
-const wss = new WebSocket.Server({ port: config.webSocketPort });
+const wss = new WebSocket.Server({
+    port: config.webSocketPort,
+    verifyClient: function(info, cb) {
+        // check token exist or not
+        var token = info.req.headers.token;
+        if (!token) cb(false, 401, "Unauthorized");
+        else {
+            // veridy token
+            jwt.verify(token, config.secret, function(err, decoded) {
+                if (err) {
+                    cb(false, 401, "Unauthorized");
+                } else {
+                    // if token is valid let user connect to websocket
+                    cb(true);
+                }
+            });
+        }
+    },
+});
 
 CLIENT = [];
 wss.on("connection", (connection, request) => {
-    // add every new connection to array
     const parameters = parse(request.url, true);
-    connection.userId = parameters.query.userId;
+    let token = request.headers.token;
+    let payload = jwt.decode(token);
+
+    let uid = payload["userId"];
+    let eid = payload["eid"];
+
+    connection.userId = uid;
+    connection.eid = eid;
+
     CLIENT.push(connection);
 
     connection.on("message", async(message) => {
@@ -22,9 +48,9 @@ wss.on("connection", (connection, request) => {
             case "forwardMessage":
                 {
                     const message_id = jsonMessage.message_id;
-                    const eid_sender = jsonMessage.eid_sender;
                     const eid_receiver = jsonMessage.eid_receiver;
                     let users = [];
+                    const eid_sender = connection.eid;
 
                     let message_instance = await Message.findOne({
                         where: { messageId: message_id },
@@ -60,9 +86,9 @@ wss.on("connection", (connection, request) => {
                 {
                     const mId = jsonMessage.mId;
                     const mContent = jsonMessage.mContent;
-                    const eid_sender = jsonMessage.eid_sender;
                     const eid_receiver = jsonMessage.eid_receiver;
                     var users = [];
+                    const eid_sender = connection.eid;
 
                     let new_message = await Message.create({
                         viewCount: 0,
@@ -203,10 +229,10 @@ wss.on("connection", (connection, request) => {
                 }
             case "addMessage":
                 {
-                    const eid_sender = jsonMessage.eid_sender;
                     const eid_receiver = jsonMessage.eid_receiver;
                     const msg_content = jsonMessage.msg_content;
                     let users = [];
+                    const eid_sender = connection.eid;
 
                     let receiver_entity = await Entity.findOne({
                         where: {
@@ -301,6 +327,10 @@ wss.on("connection", (connection, request) => {
                                 message: mId,
                             })
                         );
+                    } else {
+                        connection.send(
+                            JSON.stringify({ key: jsonMessage.key, message: "denied!" })
+                        );
                     }
 
                     break;
@@ -316,9 +346,16 @@ wss.on("connection", (connection, request) => {
                         },
                     });
 
-                    await message_instance.update({ selfDelete: 1 });
-
-                    connection.send(JSON.stringify({ key: jsonMessage.key, message: mId }));
+                    if (message_instance.eid_sender === connection.eid) {
+                        await message_instance.update({ selfDelete: 1 });
+                        connection.send(
+                            JSON.stringify({ key: jsonMessage.key, message: mId })
+                        );
+                    } else {
+                        connection.send(
+                            JSON.stringify({ key: jsonMessage.key, message: "denied!" })
+                        );
+                    }
 
                     break;
                 }
