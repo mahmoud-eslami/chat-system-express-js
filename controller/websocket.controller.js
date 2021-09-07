@@ -4,6 +4,8 @@ const { Entity, User } = require("../models/entity.model");
 const Membership = require("../models/membership.model");
 const { Message, seenMessage } = require("../models/message.model");
 const config = require("../config/config.json");
+const Sequelize = require("sequelize");
+const Op = Sequelize.Op;
 
 const wss = new WebSocket.Server({ port: config.webSocketPort });
 
@@ -161,9 +163,8 @@ wss.on("connection", (connection, request) => {
             case "getMembershipMessage":
                 {
                     const receiver_id = jsonMessage.receiver_id;
-                    const page = jsonMessage.page;
+                    const date = jsonMessage.date;
                     const pageSize = jsonMessage.pageSize;
-                    let offset = page * pageSize;
                     let limit = pageSize;
 
                     let data = [];
@@ -174,14 +175,28 @@ wss.on("connection", (connection, request) => {
 
                     if (entity_receiver.type === "U") {
                         let messages = await Message.findAll({
-                            where: { eid_receiver: receiver_id },
-                            offset: offset,
+                            where: {
+                                eid_receiver: receiver_id,
+                                createdAt: {
+                                    [Op.gte]: date,
+                                },
+                            },
+                            order: [
+                                ["createdAt", "DESC"]
+                            ],
                             limit: limit,
                         });
 
                         let messages_reverse = await Message.findAll({
-                            where: { eid_sender: receiver_id },
-                            offset: offset,
+                            where: {
+                                eid_sender: receiver_id,
+                                createdAt: {
+                                    [Op.gte]: date,
+                                },
+                            },
+                            order: [
+                                ["createdAt", "DESC"]
+                            ],
                             limit: limit,
                         });
 
@@ -214,8 +229,15 @@ wss.on("connection", (connection, request) => {
                         }
                     } else {
                         let messages = await Message.findAll({
-                            where: { eid_receiver: receiver_id },
-                            offset: offset,
+                            where: {
+                                eid_receiver: receiver_id,
+                                createdAt: {
+                                    [Op.gte]: date,
+                                },
+                            },
+                            order: [
+                                ["createdAt", "DESC"]
+                            ],
                             limit: limit,
                         });
 
@@ -248,7 +270,6 @@ wss.on("connection", (connection, request) => {
                     connection.send(
                         JSON.stringify({
                             key: jsonMessage.key,
-                            currentPage: page,
                             message: data,
                         })
                     );
@@ -259,7 +280,6 @@ wss.on("connection", (connection, request) => {
                     const eid_sender = jsonMessage.eid_sender;
                     const eid_receiver = jsonMessage.eid_receiver;
                     const msg_content = jsonMessage.msg_content;
-                    const membership_id = jsonMessage.membership_id;
                     let users = [];
 
                     let receiver_entity = await Entity.findOne({
