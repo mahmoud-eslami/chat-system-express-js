@@ -47,44 +47,7 @@ wss.on("connection", (connection, request) => {
                         eid_receiver: eid_receiver,
                     });
 
-                    if (receiver_entity.type === "U") {
-                        users.push(connection.userId);
-                        users.push(receiver_entity.uid);
-                    } else if (receiver_entity.type === "C") {
-                        let memberships = await Membership.findAll({
-                            where: {
-                                eid2: receiver_entity.entityId,
-                            },
-                        });
-
-                        // add uid of entities to users array
-                        for (const item of memberships) {
-                            let temp_entity = await Entity.findOne({
-                                where: {
-                                    entityId: item.eid1,
-                                },
-                            });
-
-                            users.push(temp_entity.uid);
-                        }
-                    } else if (receiver_entity.type === "G") {
-                        let memberships = await Membership.findAll({
-                            where: {
-                                eid2: receiver_entity.entityId,
-                            },
-                        });
-
-                        // add uid of entities to users array
-                        for (const item of memberships) {
-                            let temp_entity = await Entity.findOne({
-                                where: {
-                                    entityId: item.eid1,
-                                },
-                            });
-
-                            users.push(temp_entity.uid);
-                        }
-                    }
+                    users = await determindRelatedUsers(receiver_entity);
 
                     sendForSpecificUsers(
                         users,
@@ -114,44 +77,7 @@ wss.on("connection", (connection, request) => {
                         where: { entityId: eid_receiver },
                     });
 
-                    if (entity_receiver.type === "U") {
-                        users.push(connection.userId);
-                        users.push(entity_receiver.uid);
-                    } else if (entity_receiver.type === "C") {
-                        let memberships = await Membership.findAll({
-                            where: {
-                                eid2: receiver_entity.entityId,
-                            },
-                        });
-
-                        // add uid of entities to users array
-                        for (const item of memberships) {
-                            let temp_entity = await Entity.findOne({
-                                where: {
-                                    entityId: item.eid1,
-                                },
-                            });
-
-                            users.push(temp_entity.uid);
-                        }
-                    } else if (entity_receiver.type === "G") {
-                        let memberships = await Membership.findAll({
-                            where: {
-                                eid2: receiver_entity.entityId,
-                            },
-                        });
-
-                        // add uid of entities to users array
-                        for (const item of memberships) {
-                            let temp_entity = await Entity.findOne({
-                                where: {
-                                    entityId: item.eid1,
-                                },
-                            });
-
-                            users.push(temp_entity.uid);
-                        }
-                    }
+                    users = await determindRelatedUsers(entity_receiver);
 
                     sendForSpecificUsers(
                         users,
@@ -296,44 +222,8 @@ wss.on("connection", (connection, request) => {
                         eid_receiver: eid_receiver,
                     });
 
-                    if (receiver_entity.type === "U") {
-                        users.push(connection.userId);
-                        users.push(receiver_entity.uid);
-                    } else if (receiver_entity.type === "C") {
-                        let memberships = await Membership.findAll({
-                            where: {
-                                eid2: receiver_entity.entityId,
-                            },
-                        });
+                    users = await determindRelatedUsers(receiver_entity);
 
-                        // add uid of entities to users array
-                        for (const item of memberships) {
-                            let temp_entity = await Entity.findOne({
-                                where: {
-                                    entityId: item.eid1,
-                                },
-                            });
-
-                            users.push(temp_entity.uid);
-                        }
-                    } else if (receiver_entity.type === "G") {
-                        let memberships = await Membership.findAll({
-                            where: {
-                                eid2: receiver_entity.entityId,
-                            },
-                        });
-
-                        // add uid of entities to users array
-                        for (const item of memberships) {
-                            let temp_entity = await Entity.findOne({
-                                where: {
-                                    entityId: item.eid1,
-                                },
-                            });
-
-                            users.push(temp_entity.uid);
-                        }
-                    }
                     sendForSpecificUsers(
                         users,
                         JSON.stringify({ key: jsonMessage.key, message: created_message })
@@ -398,50 +288,14 @@ wss.on("connection", (connection, request) => {
                             },
                         });
 
-                        let entity_subscriber = [];
+                        let users = [];
 
-                        if (receiver_entity.type == "C") {
-                            // here we should get all channel member and send message to each one
-
-                            let temp_memberships = await Membership.findAll({
-                                where: {
-                                    eid2: receiver_entity.entityId,
-                                },
-                            });
-
-                            for (const item of temp_memberships) {
-                                let temp_entity = await Entity.findOne({
-                                    where: { entityId: item.eid1 },
-                                });
-
-                                entity_subscriber.push(temp_entity.uid);
-                            }
-                        } else if (receiver_entity.type == "G") {
-                            // here we should get all group member and send message to each one
-
-                            let temp_memberships = await Membership.findAll({
-                                where: {
-                                    eid2: receiver_entity.entityId,
-                                },
-                            });
-
-                            for (const item of temp_memberships) {
-                                let temp_entity = await Entity.findOne({
-                                    where: { entityId: item.eid1 },
-                                });
-
-                                entity_subscriber.push(temp_entity.uid);
-                            }
-                        } else if (receiver_entity.type == "U") {
-                            // here we should get user and send message
-
-                            entity_subscriber.push(receiver_entity.uid);
-                        }
+                        users = await determindRelatedUsers(receiver_entity);
 
                         await message_instance.destroy();
 
                         sendForSpecificUsers(
-                            entity_subscriber,
+                            users,
                             JSON.stringify({
                                 key: jsonMessage.key,
                                 message: mId,
@@ -471,6 +325,49 @@ wss.on("connection", (connection, request) => {
         }
     });
 });
+
+async function determindRelatedUsers(receiver_entity) {
+    let users = [];
+    if (receiver_entity.type === "U") {
+        users.push(connection.userId);
+        users.push(receiver_entity.uid);
+    } else if (receiver_entity.type === "C") {
+        let memberships = await Membership.findAll({
+            where: {
+                eid2: receiver_entity.entityId,
+            },
+        });
+
+        // add uid of entities to users array
+        for (const item of memberships) {
+            let temp_entity = await Entity.findOne({
+                where: {
+                    entityId: item.eid1,
+                },
+            });
+
+            users.push(temp_entity.uid);
+        }
+    } else if (receiver_entity.type === "G") {
+        let memberships = await Membership.findAll({
+            where: {
+                eid2: receiver_entity.entityId,
+            },
+        });
+
+        // add uid of entities to users array
+        for (const item of memberships) {
+            let temp_entity = await Entity.findOne({
+                where: {
+                    entityId: item.eid1,
+                },
+            });
+
+            users.push(temp_entity.uid);
+        }
+    }
+    return users;
+}
 
 function messageStruct(messageContent, eid_original) {
     return {
