@@ -118,7 +118,6 @@ wss.on("connection", (connection, request) => {
                     const date = jsonMessage.date;
                     const pageSize = jsonMessage.pageSize;
                     let limit = pageSize;
-
                     let data = [];
 
                     let entity_receiver = await Entity.findOne({
@@ -130,7 +129,7 @@ wss.on("connection", (connection, request) => {
                             where: {
                                 eid_receiver: receiver_id,
                                 createdAt: {
-                                    [Op.gte]: date,
+                                    [Op.lt]: date,
                                 },
                             },
                             order: [
@@ -143,7 +142,7 @@ wss.on("connection", (connection, request) => {
                             where: {
                                 eid_sender: receiver_id,
                                 createdAt: {
-                                    [Op.gte]: date,
+                                    [Op.lt]: date,
                                 },
                             },
                             order: [
@@ -155,7 +154,11 @@ wss.on("connection", (connection, request) => {
                         // add all two list
                         let all_messages = messages.concat(messages_reverse);
 
-                        for (const message of all_messages) {
+                        all_messages.sort(sortByDate);
+
+                        let final = all_messages.slice(0, 10);
+
+                        for (const message of final) {
                             let entity_sender = await Entity.findOne({
                                 where: { entityId: message.eid_sender },
                             });
@@ -184,7 +187,7 @@ wss.on("connection", (connection, request) => {
                             where: {
                                 eid_receiver: receiver_id,
                                 createdAt: {
-                                    [Op.gte]: date,
+                                    [Op.lt]: date,
                                 },
                             },
                             order: [
@@ -248,7 +251,7 @@ wss.on("connection", (connection, request) => {
                         eid_receiver: eid_receiver,
                     });
 
-                    users = await determindRelatedUsers(receiver_entity);
+                    users = await determindRelatedUsers(receiver_entity, connection);
 
                     sendForSpecificUsers(
                         users,
@@ -363,7 +366,17 @@ wss.on("connection", (connection, request) => {
     });
 });
 
-async function determindRelatedUsers(receiver_entity) {
+function sortByDate(a, b) {
+    if (a.createdAt < b.createdAt) {
+        return 1;
+    }
+    if (a.createdAt > b.createdAt) {
+        return -1;
+    }
+    return 0;
+}
+
+async function determindRelatedUsers(receiver_entity, connection) {
     let users = [];
     if (receiver_entity.type === "U") {
         users.push(connection.userId);

@@ -31,6 +31,10 @@ const Message = sequelize.define(
             type: Sequelize.INTEGER,
             allowNull: true,
         },
+        createdAt: {
+            allowNull: false,
+            type: Sequelize.DATE(6),
+        },
     }, {
         freezeTableName: true,
         updatedAt: false,
