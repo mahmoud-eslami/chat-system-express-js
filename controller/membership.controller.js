@@ -1,10 +1,22 @@
 const { Entity } = require("../models/entity.model");
 const Membership = require("../models/membership.model");
+const jwt = require("jsonwebtoken");
+
+function getUserId(token) {
+    let payload = jwt.decode(token);
+
+    let uid = payload["userId"];
+
+    return uid;
+}
 
 exports.createUserMembership = async(req, res) => {
     try {
-        const e_sender = req.body.e_sender;
         const e_receiver = req.body.e_receiver;
+        const token = req.headers["x-access-token"];
+        const payload = jwt.decode(token);
+
+        const e_sender = payload["eid"];
 
         let membership1 = await Membership.findOne({
             where: { eid1: e_sender, eid2: e_receiver },
@@ -34,7 +46,9 @@ exports.createUserMembership = async(req, res) => {
 
 exports.getMembershipOfUser = async(req, res) => {
     try {
-        const userId = req.body.userId;
+        const token = req.headers["x-access-token"];
+        const userId = getUserId(token);
+        console.log(userId);
 
         let temp_user_entity = await Entity.findOne({ where: { uid: userId } });
 
@@ -46,9 +60,11 @@ exports.getMembershipOfUser = async(req, res) => {
             where: { eid2: temp_user_entity.entityId },
         });
 
+        let full_list = user_membership_first.concat(user_membership_second);
+
         res.status(200).json({
             error: false,
-            message: user_membership_first.concat(user_membership_second),
+            message: full_list,
         });
     } catch (e) {
         console.log(e);
