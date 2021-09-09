@@ -1,6 +1,7 @@
 const { Entity } = require("../models/entity.model");
 const Membership = require("../models/membership.model");
 const jwt = require("jsonwebtoken");
+const { seenMessage, Message } = require("../models/message.model");
 
 function getUserId(token) {
     let payload = jwt.decode(token);
@@ -8,6 +9,14 @@ function getUserId(token) {
     let uid = payload["userId"];
 
     return uid;
+}
+
+function getEid(token) {
+    let payload = jwt.decode(token);
+
+    let eid = payload["eid"];
+
+    return eid;
 }
 
 exports.createUserMembership = async(req, res) => {
@@ -48,7 +57,7 @@ exports.getMembershipOfUser = async(req, res) => {
     try {
         const token = req.headers["x-access-token"];
         const userId = getUserId(token);
-        console.log(userId);
+        const eid = getEid(token);
 
         let temp_user_entity = await Entity.findOne({ where: { uid: userId } });
 
@@ -61,10 +70,24 @@ exports.getMembershipOfUser = async(req, res) => {
         });
 
         let full_list = user_membership_first.concat(user_membership_second);
+        let final_list = [];
+
+        for (const item of full_list) {
+            let seenCount = await getSeenCount(item.eid2, eid);
+            final_list.push({
+                id: item.id,
+                Role: item.Role,
+                LastVisitDate: item.LastVisitDate,
+                createdAt: item.createdAt,
+                eid1: item.eid1,
+                eid2: item.eid2,
+                unreadMessage: seenCount,
+            });
+        }
 
         res.status(200).json({
             error: false,
-            message: full_list,
+            message: final_list,
         });
     } catch (e) {
         console.log(e);
@@ -95,3 +118,46 @@ exports.removeSpecificMembership = async(req, res) => {
         res.status(500).json({ error: true, message: e.toString() });
     }
 };
+
+async function getSeenCount(receiver_id, eid) {
+    let list = [];
+    let seens = [];
+    let entity_receiver = await Entity.findOne({
+        where: { entityId: receiver_id },
+    });
+    if (entity_receiver.type === "U") {
+        let messages = await Message.findAll({
+            where: {
+                eid_receiver: receiver_id,
+            },
+        });
+        let messages_reverse = await Message.findAll({
+            where: {
+                eid_sender: receiver_id,
+            },
+        });
+
+        list = messages.concat(messages_reverse);
+    } else {
+        let messages = await Message.findAll({
+            where: {
+                eid_receiver: receiver_id,
+            },
+        });
+
+        list = messages;
+    }
+
+    for (const item of list) {
+        let seen_item = await seenMessage.findOne({
+            where: { eid: eid, mid: item.messageId },
+        });
+
+        if (seen_item) {
+            seens.push(seen_item);
+        }
+    }
+
+    let seenCount = list.length - seens.length;
+    return seenCount;
+}
